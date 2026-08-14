@@ -6,6 +6,8 @@ import { Button } from './components/ui.js';
 import { derive } from './lib/derive.js';
 import { detectSlim } from './lib/profile.js';
 import { buildSample } from './lib/sample.js';
+import { applyPreset, type Preset } from './lib/presets.js';
+import { sampleWing } from './lib/sample.js';
 import { decodeSkin, download, exportSkin } from './lib/skin.js';
 import { prepareCape, prepareWing, withEntry, withoutEntry } from './lib/textures.js';
 import { useEditor } from './state/editor.js';
@@ -139,6 +141,17 @@ export function App() {
 		}
 	};
 
+	const onPreset = useCallback(
+		(preset: Preset) => {
+			actions.patch(applyPreset(preset, state.features));
+			// a winged preset with no wing texture would silently render nothing, so give it one
+			if (preset.needsWing && !state.alfalfa.entries.has('wing')) {
+				actions.setAlfalfa(withEntry(state.alfalfa, 'wing', sampleWing()));
+			}
+		},
+		[actions, state.features, state.alfalfa],
+	);
+
 	const onCopy = async () => {
 		if (!state.original) return;
 		const result = exportSkin(state.original, state.features, state.alfalfa);
@@ -255,6 +268,7 @@ export function App() {
 						capeTexture={derived?.cape ?? null}
 						onUploadTexture={(kind, file) => void onUploadTexture(kind, file)}
 						onRemoveTexture={onRemoveTexture}
+						onPreset={onPreset}
 					/>
 				</aside>
 				{/* stacked on narrow screens, where the grid gives it no height of its own */}

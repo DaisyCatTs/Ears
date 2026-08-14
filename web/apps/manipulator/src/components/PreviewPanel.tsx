@@ -55,7 +55,23 @@ export function PreviewPanel({
 
 	return (
 		<div className="relative h-full w-full">
-			<canvas ref={canvasRef} className="h-full w-full cursor-grab active:cursor-grabbing" />
+			<canvas
+				ref={canvasRef}
+				aria-label="3D preview"
+				className="h-full w-full cursor-grab active:cursor-grabbing"
+			/>
+			<div className="absolute left-2 top-2 flex gap-1">
+				{(['front', 'side', 'back', 'above'] as const).map((view) => (
+					<button
+						key={view}
+						type="button"
+						className="rounded border border-edge bg-panel/80 px-2 py-0.5 capitalize backdrop-blur transition hover:bg-edge"
+						onClick={() => previewRef.current?.setView(view)}
+					>
+						{view}
+					</button>
+				))}
+			</div>
 			{!derived ? (
 				<div className="pointer-events-none absolute inset-0 grid place-content-center text-center text-muted">
 					<p className="text-base">Drop a skin here</p>

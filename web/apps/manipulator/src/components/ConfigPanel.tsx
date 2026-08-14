@@ -1,5 +1,6 @@
 import { EAR_ANCHORS, EAR_MODES, TAIL_MODES, WING_MODES, type PartialFeatures } from '@ears/protocol';
 
+import { PRESETS, type Preset } from '../lib/presets.js';
 import { TexturePanel } from './TexturePanel.js';
 import { Button, Field, Section, Select, Slider, Toggle } from './ui.js';
 
@@ -17,6 +18,7 @@ export function ConfigPanel({
 	capeTexture,
 	onUploadTexture,
 	onRemoveTexture,
+	onPreset,
 }: {
 	features: PartialFeatures;
 	slim: boolean;
@@ -31,6 +33,7 @@ export function ConfigPanel({
 	capeTexture: ImageData | null;
 	onUploadTexture: (kind: 'wing' | 'cape', file: File) => void;
 	onRemoveTexture: (kind: 'wing' | 'cape') => void;
+	onPreset: (preset: Preset) => void;
 }) {
 	const earsOn = features.earMode !== 'NONE';
 	const tailOn = features.tailMode !== 'NONE';
@@ -38,6 +41,19 @@ export function ConfigPanel({
 
 	return (
 		<div className="flex h-full flex-col overflow-y-auto">
+			<Section title="Presets">
+				<div className="grid grid-cols-3 gap-1">
+					{PRESETS.map((preset) => (
+						<Button key={preset.name} onClick={() => onPreset(preset)} title={preset.description}>
+							{preset.name}
+						</Button>
+					))}
+				</div>
+				<p className="text-[11px] text-muted">
+					A starting point — everything below stays editable.
+				</p>
+			</Section>
+
 			<Section title="Model">
 				<Field label="Slim arms" hint="Alex-style 3px arms">
 					<Toggle checked={slim} onChange={onSlim} label="Slim arms" />

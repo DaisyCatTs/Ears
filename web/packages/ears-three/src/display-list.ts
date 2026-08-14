@@ -92,15 +92,30 @@ export function buildDisplayList(objects: RenderObject[], opts: BuildOptions): T
 		geom.applyMatrix4(applyMoves(obj.moves, opts.slim));
 		geom.computeVertexNormals();
 
-		const material = new THREE.MeshLambertMaterial({
-			map: texture,
-			side: obj.back ? THREE.BackSide : THREE.FrontSide,
-			transparent: true,
-			alphaTest: 0.01,
-			flatShading: true,
-			fog: false,
-			...(obj.emissive ? { emissive: new THREE.Color(0xffffff), emissiveMap: texture } : {}),
-		});
+		// Emissive means "drawn at full light", which is an unlit material — shading it like the
+		// rest washes the whole model out. It also lands on exactly the same plane as the base
+		// quad, so it needs a depth bias or the two fight for the same pixels; this is the same
+		// bug as upstream issue #235, solved here with polygonOffset rather than by moving
+		// geometry around.
+		const material = obj.emissive
+			? new THREE.MeshBasicMaterial({
+					map: texture,
+					side: obj.back ? THREE.BackSide : THREE.FrontSide,
+					transparent: true,
+					alphaTest: 0.01,
+					fog: false,
+					polygonOffset: true,
+					polygonOffsetFactor: -1,
+					polygonOffsetUnits: -1,
+				})
+			: new THREE.MeshLambertMaterial({
+					map: texture,
+					side: obj.back ? THREE.BackSide : THREE.FrontSide,
+					transparent: true,
+					alphaTest: 0.01,
+					flatShading: true,
+					fog: false,
+				});
 
 		const mesh = new THREE.Mesh(geom, material);
 		mesh.name = `${obj.texture}${obj.back ? ':back' : ''}`;

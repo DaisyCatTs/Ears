@@ -102,6 +102,28 @@ export class Preview {
 		);
 	}
 
+	/** Points the camera at a named side of the model. */
+	setView(view: 'front' | 'side' | 'back' | 'above'): void {
+		switch (view) {
+			case 'front':
+				this.yaw = 25;
+				this.pitch = 10;
+				break;
+			case 'side':
+				this.yaw = 90;
+				this.pitch = 5;
+				break;
+			case 'back':
+				this.yaw = 205;
+				this.pitch = 10;
+				break;
+			case 'above':
+				this.yaw = 25;
+				this.pitch = 55;
+				break;
+		}
+	}
+
 	resize(): void {
 		const rect = this.canvas.getBoundingClientRect();
 		const w = Math.max(1, Math.floor(rect.width));
