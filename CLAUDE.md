@@ -4,13 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Ears — a Minecraft player-model customization mod, ported to ~45 platform/version combinations
-(Forge 1.2 → NeoForge 26.x, Fabric 1.14 → 26.x, Rift, StAPI/vanilla Beta 1.7.3), plus a browser-based
-skin editor (the Manipulator). GitHub is a **mirror** of the canonical Gitea repo at
-`git.sleeping.town/unascribed/Ears`. MIT licensed.
+Ears — a Minecraft player-model customization mod. This is **DaisyCatTs/Ears**, a fork of
+`exaskye/Ears` (still wired up as the `upstream` remote) narrowed to current versions: **Fabric and
+NeoForge on 1.21.11 and 26.1**. MIT licensed; upstream attribution stays.
 
 Mod features are encoded as "magic pixels" in the player's skin PNG; common code parses them and
 drives an abstract renderer that each port adapts to its Minecraft version's rendering API.
+
+Upstream carries ~45 ports back to Forge 1.2. Those were removed here — `git show legacy-ports`
+(a tag) is the restore point, and `git checkout legacy-ports -- platform-forge-1.12` brings one back.
 
 ## Repo layout
 
@@ -21,35 +23,34 @@ regular files, or Gradle will try to run in the root dir.
 
 - `common/` — all real logic, split into many source sets (see below). Produces classifier jars that
   ports consume as **file dependencies** off `common/build/libs/`, so **common must be built first**.
-- `platform-<loader>-<mcver>/` — one thin port per target. Contains the render-delegate impl, the
-  mixins or ASM transformers, and mod metadata. Also has its own `README.md` naming which common
-  target it uses, and a `version-suffix.txt` for per-port version bumps.
-- `publish-curseforge/`, `publish-modrinth/` — publishing-only builds; a big `switch (target)`
-  mapping each platform to game versions/loaders/stability.
-- `manipulator/` — the browser Manipulator (three.js). `ears-common.js` is a symlink into the common
-  build. **Note:** TeaVM/JS compilation was torn out of `common/build.gradle` (commit `081aa8c`); the
-  `closure` task its README references no longer exists, so the Manipulator build is currently
-  non-functional in-tree.
+- `platform-<loader>-<mcver>/` — one thin port per target (four of them). Contains the
+  render-delegate impl, the mixins, and mod metadata. Also has its own `README.md` naming which
+  common target it uses, and a `version-suffix.txt` for per-port version bumps.
+- `publish-curseforge/`, `publish-modrinth/` — publishing-only builds; a `switch (target)` mapping
+  each platform to game versions/loaders/stability.
+- `web/` — the TypeScript side (see below).
+- `manipulator/` — the **old** browser Manipulator (three.js r122 + TeaVM). Kept only as reference
+  while `web/` is built: `ears-common.js` is a dangling symlink into a TeaVM build whose Gradle
+  tasks were deleted upstream in `081aa8c`, so this cannot run. It is still the only implementation
+  of a few things (the v0 write path, the compatibility-notice table, the preview geometry).
 
 ## Common source sets
 
 `common/src/README.md` is the authoritative explanation; the short version:
 
-| Source set | Included in | Constraints |
+| Source set | Included in | Notes |
 |---|---|---|
 | `api` | every port, published as `com.unascribed:ears-api` | ABI-stable; must not reference `common` and must not crash when Ears is absent |
-| `main` | every port **including the browser** | must stay TeaVM-compatible (no `java.util.concurrent`, etc.) |
-| `normal` | all non-JS ports | where TeaVM-incompatible code goes |
-| `js` | JS ports only (Manipulator) | |
-| `legacy` / `vlegacy` | pre-1.13 (LWJGL2) / pre-1.8 ports | `vlegacy` bundles MCAuthLib + Nanojson (shaded/relocated) |
-| `modern` | 1.13+ non-JS ports | currently empty |
-| `mixin` / `agent` | targets with SpongePowered Mixin / targets without it (ASM + the Mini patcher) | |
-| `dummy` | compile-only facades (FML, LWJGL, EarsLog stub) | never shipped |
+| `main` | every port | parsers, writer, Alfalfa, renderer |
+| `normal` | `ears-common` and up | published for third parties who want the parser without the renderer |
+| `mixin` | every supported port | |
+| `modern` | 1.13+ ports | currently empty, so it isn't in git |
+| `oracle` | nothing — never shipped | generates `tests/fixtures/`; see below |
 
-`common`'s `build` task produces one jar per combination (`ears-common-mixin-modern.jar`,
-`ears-common-agent-legacy.jar`, `ears-common-mixin-vlegacy.jar`, …). A port's `build.gradle` picks
-exactly one via `implementation files('../common/build/libs/ears-common-<target>.jar')` and inlines
-it into the final jar. Common compiles at **source/target 1.6**.
+`common`'s `build` task produces `ears-api.jar`, `ears-common.jar`, `ears-common-modern.jar` and
+`ears-common-mixin-modern.jar`. Every supported port inlines the last of those via
+`implementation files('../common/build/libs/ears-common-mixin-modern.jar')`. Common compiles at
+**release 8**.
 
 ## Architecture
 
@@ -60,19 +61,19 @@ it into the final jar. Common compiles at **source/target 1.6**.
   version-specific drawing lives behind `EarsRenderDelegate` (`common/src/main/.../render/`) — ports
   subclass `AbstractEarsRenderDelegate` / `Indirect…` / `Direct…` rather than reimplementing feature
   logic. **Feature/geometry changes belong in common, not in a port.**
-- Ports hook skin-texture loading (mixin or ASM transformer) so the loaded texture object implements
-  `EarsFeaturesHolder`, then read features back out of it at render time
-  (`EarsMod.getEarsFeatures` in Fabric ports, `LayerEars`/`EarsLayerRenderer` elsewhere).
+- Ports hook skin-texture loading (`MixinSkinTextureDownloader`) so the loaded texture object
+  implements `EarsFeaturesHolder`, then read features back out of it at render time via
+  `EarsMod.getEarsFeatures`.
 - Third-party integration: `EarsInhibitorRegistry` (force features not to render) and
   `EarsStateOverriderRegistry` (lie about armor/elytra/etc.), both in `api`.
 - `EarsLog` is tag-based (`Common:Renderer`, `Platform:Inject`, …) and compiled out unless `DEBUG`.
-- **Mappings vary by port** — Plasma, Yarn, MCP, Mojmap, sometimes referenced even from common code.
-  Match whatever the port you're editing already uses.
+- **All supported ports are on Mojang mappings.** Upstream spans Plasma, Yarn and MCP too, so those
+  names still turn up in git history and in the odd comment.
 
 ## Building
 
 **Supported matrix: Fabric and NeoForge on 1.21.11 and 26.1** (the 26.1 artifacts also declare
-26.1.x and 26.2). The other `platform-*` directories are legacy — not built, not published.
+26.1.x and 26.2). Those four `platform-*` directories are all that remain.
 
 One JDK is enough: anything Gradle 9.2 can run on, i.e. **17 through 25** — *not* 26, which Gradle
 9.2 rejects ("Unsupported class file major version 70"). The 26.1 ports request a Java 25
@@ -96,7 +97,7 @@ Each directory is its own build, so `./gradlew` must be run from inside it. `com
 supported ports build on JDK 21 on Windows.
 
 There is no test suite; verification is building the affected port(s) and running them in-game
-(`install-test.fish` copies `artifacts/*` into Prism instances, handling coremod/agent layouts).
+(`install-test.fish` copies `artifacts/*` into matching Prism instances).
 
 What *is* pinned down is the skin data format:
 
@@ -148,6 +149,10 @@ on a modern JDK. They need modernizing (cursegradle 1.4.0 is the likely blocker)
 ## Adding a new version port
 
 Copy the nearest existing port directory, then update `settings.gradle` (root project name),
-`gradle.properties` (`minecraft_version`, loader/mapping versions, `archives_base_name`), the common
-target jar it depends on, mod metadata (`fabric.mod.json` / `mcmod.info` / `mods.toml`), and the
-mixins/transformers for API changes. Re-run `unify-wrappers.sh` so the new wrapper is hard-linked.
+`gradle.properties` (`minecraft_version`, loader versions, `archives_base_name`), mod metadata
+(`fabric.mod.json` / `neoforge.mods.toml`), and the mixins for API changes. Re-run
+`unify-wrappers.sh` so the new wrapper is hard-linked.
+
+Between 1.21.11 and 26.1 only `EarsLayerRenderer`, `MixinSkinTextureDownloader` and the version
+strings differ — 13 of 18 files are byte-identical — so start by diffing the two closest existing
+ports to see what a version bump actually costs.

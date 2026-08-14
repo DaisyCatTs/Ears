@@ -1,79 +1,46 @@
-# Holy source folders, Batman!
+# Source folders
 
-Don't panic.
-
-Ears Common is split into a lot of small pieces due to the disparate sets of platforms that Ears
-can target (including *web browsers*). Here's what they all are, in order of scope:
-
-## The Core
+Ears Common is split into a few pieces, because not every consumer wants the same subset. In order
+of scope:
 
 ### api
-This is published, API/ABI-stable classes exposed in the Maven artifact. Others are expected to use
-these classes, and care must be taken to ensure no references are made to common and that none of
-the classes will crash if used when Ears is not present (as may be the case in dev envs).
+Published, API/ABI-stable classes exposed in the Maven artifact (`com.unascribed:ears-api`). Other
+mods are expected to use these, so care must be taken that nothing here references common, and that
+nothing crashes when Ears is absent (as it will be in a dev env).
 
 Every port includes api.
 
 ### main
-Anything in main is included in all ports, including the browser. Care must be taken here not to do
-anything incompatible with TeaVM.
-
-This contains almost all of the meaningful common code, including the feature parser and renderer.
+Included in every port. Almost all of the meaningful code lives here: the feature parsers and
+writer, Alfalfa, and the renderer.
 
 ### normal
-This is used by all non-JavaScript ports. Anything incompatible with TeaVM (such as usages of
-java.util.concurrent) must go here.
-
-### js
-This is used by JavaScript ports; currently, this is just The Manipulator, but will Soon™ include
-the Ears Gallery.
-
-### dummy
-These are dummy classes used to compile common without directly depending on anything. This includes
-facades for old and new versions of FML, specially distorted LWJGL classes that late-bind, and a
-stub implementation of EarsLog.
-
-Nothing from this source folder ever makes it into a finished artifact.
-
-## What year is it?
-
-### modern
-This source folder is empty at the moment, so it doesn't show up in Git. This is used by all
-"modern" non-JS ports, and used to include RawEarsImage before that began being used by main.
-
-"Modern" versions of Minecraft are those 1.13 and later; the switch to LWJGL3.
-
-### legacy
-This is used by all pre-1.13 Minecraft ports — those that use LWJGL2. It includes AWTEarsImage, and
-some classes related to unmanaged rendering mainly used by Beta ports.
-
-### vlegacy
-This is additions to `legacy` used by "**v**ery **legacy**" versions of Minecraft; those before 1.8. It
-contains MCAuthLib, Nanojson, and utilities to retrieve data from Mojang's skin servers.
-
-## Will it blend?
+Everything that isn't the API and isn't shared with a hypothetical non-JVM target. Historically
+this held anything TeaVM couldn't compile; the split is kept because `ears-common` is published for
+third parties (Visage and friends) who want the parser without the rendering abstraction.
 
 ### mixin
-This is used by any port to a target that has SpongePowered Mixin. This is, more or less, Fabric
-and post-1.13 Forge.
+For ports whose target has SpongePowered Mixin — which is every supported port.
 
-### agent
-This is used by any port to a target that does *not* have Mixin. It contains ObjectWeb ASM, the
-Mini patcher framework, and related gadgets.
+### modern
+Empty at the moment, so it doesn't show up in git. For code used only by "modern" (1.13+, LWJGL3)
+ports.
+
+### oracle
+Not shipped, and not part of any jar. Generates the golden fixtures in `tests/fixtures/` that pin
+down the on-skin data format, and decodes the TypeScript implementation's output to check the two
+agree. See `tests/README.md`.
 
 # Putting it all together
 
-These source sets are combined into various targets which can be used by a port or published on
-their own. They are:
+These combine into the jars a port or a third party consumes:
 
-* **ears-common-api** - just `api` (published to Maven)
-* **ears-common** - `api`, `main`, and `normal` (e.g. Visage)
-* **ears-common-legacy** - `api`, `main`, `normal`, and `legacy` (intermediate, not used)
-* **ears-common-modern** - `api`, `main`, `normal`, and `modern` (intermediate, not used)
-* **ears-common-agent-vlegacy** - `api`, `main`, `normal`, `legacy`, `vlegacy`, and `agent` (e.g. Forge 1.5)
-* **ears-common-agent-legacy** - `api`, `main`, `normal`, `legacy`, and `agent` (e.g. Forge 1.8)
-* **ears-common-agent-modern** - `api`, `main`, `normal`, `modern`, and `agent` (not currently used)
-* **ears-common-mixin-vlegacy** - `api`, `main`, `normal`, `legacy`, `vlegacy`, and `mixin` (e.g. Fabric Cursed Legacy b1.7.3)
-* **ears-common-mixin-legacy** - `api`, `main`, `normal`, `legacy`, and `mixin` (e.g. Fabric Legacy 1.8)
-* **ears-common-mixin-modern** - `api`, `main`, `normal`, `modern`, and `mixin` (e.g. Fabric 1.16)
+* **ears-api** — just `api` (published to Maven)
+* **ears-common** — `api`, `main`, `normal` (e.g. Visage)
+* **ears-common-modern** — `api`, `main`, `normal`, `modern`
+* **ears-common-mixin-modern** — `api`, `main`, `normal`, `mixin`, `modern` — what every supported
+  port actually inlines
 
+> Older versions of Ears also had `legacy`, `vlegacy`, `agent`, `dummy` and `js` source folders,
+> feeding an `agent-*` (ASM/Mini patcher, for targets without Mixin), `mixin-vlegacy` and TeaVM
+> browser build. They went away with the pre-1.21 ports; `git show legacy-ports` has them.

@@ -1,30 +1,11 @@
 #!/usr/bin/fish
-set coremod ears-forge-1.4 ears-forge-1.5
-set agent ears-vanilla-b1.7.3 ears-forge-1.2
-set compat ears-fabric-1.16=ears-fabric-1.15 ears-fabric-1.17=ears-fabric-1.18 ears-forge-1.9=ears-forge-1.10,ears-forge-1.11 ears-neoforge-1.20.2=ears-neoforge-1.20.6
-set hasCompat (echo $compat |tr ' ' '\n' |cut -d'=' -f1)
-function doCopy
-	set src $argv[1]
-	set dst $argv[2]
-	if contains $dst $agent
-		rm -f ~/PrismInstances/$dst/minecraft/ears.jar
-		cp artifacts/$src-*.jar ~/PrismInstances/$dst/minecraft/ears.jar
-	else 
-		set dir mods
-		if contains $dst $coremod
-			set dir coremods
-		end
-		mkdir -p ~/PrismInstances/$dst/minecraft/$dir/
-		rm -f ~/PrismInstances/$dst/minecraft/$dir/ears-*.jar
-		cp artifacts/$src-*.jar ~/PrismInstances/$dst/minecraft/$dir
-	end
-end
+# Copies the built jars into matching Prism instances for in-game testing.
+#
+# Every supported port is a normal mod jar now — the coremod, javaagent and
+# compatibility-alias handling all went away with the legacy ports.
 for t in ears-(ls -1d platform-* |cut -d- -f2-)
-	if contains $t $hasCompat
-		for sub in (string split ',' (string split '=' (string match -ea $t= $compat)))
-			doCopy $t $sub
-		end
-	else
-		doCopy $t $t
-	end
+	set dir ~/PrismInstances/$t/minecraft/mods
+	mkdir -p $dir
+	rm -f $dir/ears-*.jar
+	cp artifacts/$t-*.jar $dir
 end

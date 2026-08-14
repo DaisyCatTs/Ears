@@ -1,7 +1,6 @@
 plugins {
 	id 'java-library'
 	id 'maven-publish'
-	id 'com.gradleup.shadow' version '9.6.1'
 }
 
 // NB: deliberately no `version` — the platform ports consume these jars by literal filename
@@ -9,8 +8,8 @@ plugins {
 // The publications below set their version explicitly.
 
 java {
-	// Common used to target Java 6 for the pre-1.6 Minecraft ports. Those ports are going away,
-	// and 8 is the oldest release a modern JDK will accept.
+	// Common used to target Java 6 for the pre-1.6 Minecraft ports. Those ports are gone, and 8 is
+	// the oldest release a modern JDK will accept.
 	sourceCompatibility = JavaVersion.VERSION_1_8
 	targetCompatibility = JavaVersion.VERSION_1_8
 }
@@ -21,15 +20,9 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 repositories {
-	// Gradle will throw a "helpful" error about the dependencies not supporting Java 6 if not
-	// forced to ignore metadata
 	maven { url = uri('https://repo1.maven.org/maven2/'); metadataSources { artifact() } }
 	maven { url = uri('https://libraries.minecraft.net/'); metadataSources { artifact() } }
 	maven { url = uri('https://repo.spongepowered.org/maven/'); metadataSources { artifact() } }
-}
-configurations {
-	agentShade
-	vlegacyShade
 }
 sourceSets {
 	api {
@@ -39,25 +32,11 @@ sourceSets {
 		compileClasspath += sourceSets.api.output
 		compileClasspath += sourceSets.api.compileClasspath
 	}
-	dummy {}
 	main {
 		compileClasspath += sourceSets.normal.output
 		compileClasspath += sourceSets.normal.compileClasspath
 		runtimeClasspath += sourceSets.normal.output
 		runtimeClasspath += sourceSets.normal.runtimeClasspath
-	}
-	legacy {
-		compileClasspath += sourceSets.main.output
-		compileClasspath += sourceSets.main.compileClasspath
-		compileClasspath += sourceSets.dummy.output
-		runtimeClasspath += sourceSets.main.output
-		runtimeClasspath += sourceSets.main.runtimeClasspath
-	}
-	vlegacy {
-		compileClasspath += sourceSets.legacy.compileClasspath
-		compileClasspath += sourceSets.legacy.output
-		runtimeClasspath += sourceSets.legacy.runtimeClasspath
-		runtimeClasspath += sourceSets.legacy.output
 	}
 	mixin {
 		compileClasspath += sourceSets.main.output
@@ -65,21 +44,15 @@ sourceSets {
 		runtimeClasspath += sourceSets.main.output
 		runtimeClasspath += sourceSets.main.runtimeClasspath
 	}
+	// empty at the moment, so it doesn't show up in git — for code used by 1.13+ (LWJGL3) ports
 	modern {
 		compileClasspath += sourceSets.main.output
 		compileClasspath += sourceSets.main.compileClasspath
 		runtimeClasspath += sourceSets.main.output
 		runtimeClasspath += sourceSets.main.runtimeClasspath
 	}
-	agent {
-		compileClasspath += sourceSets.main.output
-		compileClasspath += sourceSets.main.compileClasspath
-		compileClasspath += sourceSets.dummy.output
-		runtimeClasspath += sourceSets.main.output
-		runtimeClasspath += sourceSets.main.runtimeClasspath
-	}
-	// The protocol oracle: generates the golden fixtures that the TypeScript implementation is
-	// tested against. Never shipped — it isn't part of any jar task.
+	// The protocol oracle: generates the golden fixtures the TypeScript implementation is tested
+	// against. Never shipped — it isn't part of any jar task.
 	oracle {
 		compileClasspath += sourceSets.api.output
 		compileClasspath += sourceSets.main.output
@@ -117,18 +90,18 @@ tasks.register('apiSourcesJar', Jar) {
 	duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
-tasks.register('mixinLegacyJar', Jar) {
+tasks.register('modernJar', Jar) {
 	from sourceSets.api.output
 	from sourceSets.main.output
 	from sourceSets.normal.output
-	from sourceSets.mixin.output
-	from sourceSets.legacy.output
+	from sourceSets.modern.output
 
-	archiveClassifier = 'mixin-legacy'
+	archiveClassifier = 'modern'
 
 	duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
+/** What every supported port consumes. */
 tasks.register('mixinModernJar', Jar) {
 	from sourceSets.api.output
 	from sourceSets.main.output
@@ -141,123 +114,15 @@ tasks.register('mixinModernJar', Jar) {
 	duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
-tasks.register('mixinVLegacyJar', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
-	from sourceSets.api.output
-	from sourceSets.main.output
-	from sourceSets.normal.output
-	from sourceSets.legacy.output
-	from sourceSets.vlegacy.output
-	from sourceSets.mixin.output
-
-	configurations = [project.configurations.vlegacyShade]
-	relocate 'com.grack.nanojson', 'com.unascribed.ears.common.legacy.nanojson'
-	exclude 'module-info.class'
-
-	archiveClassifier = 'mixin-vlegacy'
-
-	duplicatesStrategy = DuplicatesStrategy.INCLUDE
-}
-
-tasks.register('legacyJar', Jar) {
-	from sourceSets.api.output
-	from sourceSets.main.output
-	from sourceSets.normal.output
-	from sourceSets.legacy.output
-
-	archiveClassifier = 'legacy'
-
-	duplicatesStrategy = DuplicatesStrategy.INCLUDE
-}
-
-tasks.register('vlegacyJar', Jar) {
-	from sourceSets.api.output
-	from sourceSets.main.output
-	from sourceSets.normal.output
-	from sourceSets.legacy.output
-	from sourceSets.vlegacy.output
-
-	archiveClassifier = 'vlegacy'
-
-	duplicatesStrategy = DuplicatesStrategy.INCLUDE
-}
-
-tasks.register('modernJar', Jar) {
-	from sourceSets.api.output
-	from sourceSets.main.output
-	from sourceSets.normal.output
-	from sourceSets.modern.output
-
-	archiveClassifier = 'modern'
-
-	duplicatesStrategy = DuplicatesStrategy.INCLUDE
-}
-
-tasks.register('agentLegacyJar', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
-	from sourceSets.api.output
-	from sourceSets.main.output
-	from sourceSets.normal.output
-	from sourceSets.legacy.output
-	from sourceSets.agent.output
-
-	configurations = [project.configurations.agentShade]
-	relocate 'org.objectweb.asm', 'com.unascribed.ears.common.agent.mini.asm'
-	exclude 'module-info.class'
-
-	archiveClassifier = 'agent-legacy'
-
-	duplicatesStrategy = DuplicatesStrategy.INCLUDE
-}
-
-tasks.register('agentModernJar', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
-	from sourceSets.api.output
-	from sourceSets.main.output
-	from sourceSets.normal.output
-	from sourceSets.modern.output
-	from sourceSets.agent.output
-
-	configurations = [project.configurations.agentShade]
-	relocate 'org.objectweb.asm', 'com.unascribed.ears.common.agent.mini.asm'
-	exclude 'module-info.class'
-
-	archiveClassifier = 'agent-modern'
-
-	duplicatesStrategy = DuplicatesStrategy.INCLUDE
-}
-
-tasks.register('agentVLegacyJar', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
-	from sourceSets.api.output
-	from sourceSets.main.output
-	from sourceSets.normal.output
-	from sourceSets.legacy.output
-	from sourceSets.vlegacy.output
-	from sourceSets.agent.output
-
-	configurations = [project.configurations.agentShade, project.configurations.vlegacyShade]
-	relocate 'org.objectweb.asm', 'com.unascribed.ears.common.agent.mini.asm'
-	relocate 'com.grack.nanojson', 'com.unascribed.ears.common.legacy.nanojson'
-	exclude 'module-info.class'
-
-	archiveClassifier = 'agent-vlegacy'
-
-	duplicatesStrategy = DuplicatesStrategy.INCLUDE
-}
-
 tasks.named('build') {
-	dependsOn 'apiJar', 'apiSourcesJar'
-	dependsOn 'mixinLegacyJar', 'mixinModernJar', 'mixinVLegacyJar'
-	dependsOn 'legacyJar', 'vlegacyJar', 'modernJar'
-	dependsOn 'agentLegacyJar', 'agentModernJar', 'agentVLegacyJar'
+	dependsOn 'apiJar', 'apiSourcesJar', 'modernJar', 'mixinModernJar'
 }
 
 dependencies {
+	// for EarsMixinConfigPlugin, in the mixin source set
 	implementation('org.spongepowered:mixin:0.7-SNAPSHOT') {
 		transitive = false
 	}
-
-	implementation 'org.ow2.asm:asm:9.2'
-	implementation 'org.ow2.asm:asm-tree:9.2'
-	agentShade 'org.ow2.asm:asm:9.2'
-	agentShade 'org.ow2.asm:asm-tree:9.2'
 }
 
 // Regenerates the golden protocol fixtures. The output is checked in: re-run this and diff to see
@@ -280,8 +145,8 @@ tasks.register('decodeTsFixtures', JavaExec) {
 	args file('../tests/fixtures-ts').absolutePath
 }
 
-// Replaces replace-version.sh, which can't run on Windows. Rewrites the marker in place, and only
-// when it actually changes, so it doesn't dirty compileJava on every build.
+// Rewrites the version marker in place, and only when it changes, so it doesn't dirty compileJava
+// on every build. Replaces replace-version.sh, which could not run on Windows.
 tasks.register('stampVersion') {
 	def versionFile = file('../version.txt')
 	def suffixFile = file('version-suffix.txt')
@@ -331,14 +196,7 @@ publishing {
 			version = file('../version.txt').text.trim()
 
 			artifact(tasks.named('jar')) { classifier = '' }
-			artifact(tasks.named('vlegacyJar')) { classifier = 'vlegacy' }
-			artifact(tasks.named('agentVLegacyJar')) { classifier = 'agent-vlegacy' }
-			artifact(tasks.named('mixinVLegacyJar')) { classifier = 'mixin-vlegacy' }
-			artifact(tasks.named('legacyJar')) { classifier = 'legacy' }
-			artifact(tasks.named('agentLegacyJar')) { classifier = 'agent-legacy' }
-			artifact(tasks.named('mixinLegacyJar')) { classifier = 'mixin-legacy' }
 			artifact(tasks.named('modernJar')) { classifier = 'modern' }
-			artifact(tasks.named('agentModernJar')) { classifier = 'agent-modern' }
 			artifact(tasks.named('mixinModernJar')) { classifier = 'mixin-modern' }
 		}
 	}

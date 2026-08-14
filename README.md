@@ -3,17 +3,32 @@
   <h3 align="center">Faithful fancy fashion features for fuzzy folk.</h3>
 </p>
 
-**The GitHub repository for Ears is now a [mirror of the Gitea repository](https://git.sleeping.town/unascribed/Ears).** GitHub-side issues will still be responded to.
+**This is a fork of [Ears](https://github.com/exaskye/Ears) by Exa Skye and contributors**, focused
+on current Minecraft versions and a rebuilt skin manipulator. For the full version-spanning
+original — Forge 1.2 through the latest snapshots — go upstream.
 
-Ears is a player model customization mod available for a dizzying number of Minecraft versions.
+Ears is a player model customization mod. This fork supports **Fabric and NeoForge on 1.21.11 and
+26.1** (the 26.1 build also covers 26.1.x and 26.2). The skin data format is unchanged, so skins
+made for upstream Ears work here and vice versa.
 
 Get it and/or learn more at [CurseForge](https://www.curseforge.com/minecraft/mc-mods/ears), [Modrinth](https://modrinth.com/mod/ears),
 or [Glass Repo](https://glass-repo.net/repo/mod/ears).
 
-Check out the [Manipulator](https://unascribed.com/ears)!
+Check out the [Manipulator](https://unascribed.com/ears)! (A rewrite lives in `web/`; the original
+`manipulator/` cannot be built from source since TeaVM was removed upstream.)
 
-**Mappings Notice**: Ears platform ports use a variety of mappings, including Plasma, Yarn, MCP, and
-Mojmap. References to these mappings are made even in common code. *Viewer discretion is advised.*
+**Mappings Notice**: the supported ports are all on Mojang mappings. Upstream spans Plasma, Yarn and
+MCP as well, and references to those still appear in common code and in the git history.
+
+## Building
+
+One JDK in the 17–25 range; the 26.1 ports fetch their own Java 25 toolchain.
+
+```bash
+./build.sh                                # common + all four ports → artifacts/
+cd common && ./gradlew build              # or per-module (required on Windows)
+cd web && bun install && bun run test:all # the TypeScript protocol and its golden tests
+```
 
 ## Using the API
 
