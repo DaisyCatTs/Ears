@@ -40,6 +40,23 @@ jar {
     from "../LICENSE"
 }
 
-compileJava.doFirst {
-	'../common/replace-version.sh src/main/java/com/unascribed/ears/EarsPlatformVersion.java'.execute()
+// Replaces the ../common/replace-version.sh call, which can't run on Windows. Rewrites the marker
+// in place, and only when it changes, so it doesn't dirty compileJava on every build.
+tasks.register('stampVersion') {
+	def versionFile = file('../version.txt')
+	def suffixFile = file('version-suffix.txt')
+	def target = file('src/main/java/com/unascribed/ears/EarsPlatformVersion.java')
+	inputs.file versionFile
+	inputs.property 'suffix', suffixFile.exists() ? suffixFile.text.trim() : ''
+	outputs.file target
+	doLast {
+		def v = versionFile.text.trim() + (suffixFile.exists() ? suffixFile.text.trim() : '')
+		def before = target.text
+		def after = before.replaceAll(/(?s)\/\*VERSION\*\/.*?\/\*\/VERSION\*\//, '/*VERSION*/"' + v + '"/*/VERSION*/')
+		if (before != after) {
+			target.text = after
+			logger.lifecycle("Stamped version $v into $target.name")
+		}
+	}
 }
+tasks.named('compileJava') { dependsOn 'stampVersion' }

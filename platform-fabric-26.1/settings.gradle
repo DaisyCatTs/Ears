@@ -8,4 +8,9 @@ pluginManagement {
     }
 }
 
+plugins {
+    // lets Gradle fetch the Java 25 toolchain itself, instead of requiring JAVA25_HOME to be set
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
 rootProject.name = "ears-platform-fabric-26.1"

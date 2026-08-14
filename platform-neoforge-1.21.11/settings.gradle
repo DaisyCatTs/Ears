@@ -7,7 +7,8 @@ pluginManagement {
 }
 
 plugins {
-    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+    // 0.8.0 references JvmVendorSpec.IBM_SEMERU, which Gradle 9 removed
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
 }
 
 rootProject.name = "ears-platform-neoforge-1.21.11"
