@@ -5,6 +5,7 @@ import { InspectorPanel } from './components/InspectorPanel.js';
 import { PreviewPanel } from './components/PreviewPanel.js';
 import { Button } from './components/ui.js';
 import { derive } from './lib/derive.js';
+import { detectSlim } from './lib/profile.js';
 import { buildSample } from './lib/sample.js';
 import { decodeSkin, download, exportSkin } from './lib/skin.js';
 import { prepareCape, prepareWing, withEntry, withoutEntry } from './lib/textures.js';
@@ -103,17 +104,29 @@ export function App() {
 	const onLookup = async () => {
 		const name = username.trim();
 		if (!name) return;
+		if (!/^[A-Za-z0-9_]{1,16}$/.test(name)) {
+			setError('Minecraft usernames are up to 16 letters, digits or underscores.');
+			return;
+		}
 		setLooking(true);
 		try {
-			// our own Worker, because Mojang's API sends no CORS headers; see worker/index.ts
-			const res = await fetch(`/api/skin/${encodeURIComponent(name)}`);
+			// crafthead.net, not Mojang: Mojang's API sends no CORS headers, so a browser cannot
+			// call it, and it answers 403 to datacenter traffic so a proxy of our own does not help
+			// either. This is the one part of the editor that talks to anyone — it sends the
+			// username and nothing else, and never touches the skin you are editing.
+			const res = await fetch(`https://crafthead.net/skin/${encodeURIComponent(name)}`);
+			if (res.status === 404) {
+				setError(`No player called "${name}".`);
+				return;
+			}
 			if (!res.ok) {
-				const body = (await res.json().catch(() => null)) as { error?: string } | null;
-				setError(body?.error ?? `Could not load a skin for "${name}".`);
+				setError(`Could not load a skin for "${name}".`);
 				return;
 			}
 			loadBytes(new Uint8Array(await res.arrayBuffer()));
-			if (res.headers.get('x-skin-model') === 'slim') actions.setSlim(true);
+			void detectSlim(name).then((slim) => {
+				if (slim) actions.setSlim(true);
+			});
 		} catch {
 			setError('Could not reach the skin lookup service.');
 		} finally {

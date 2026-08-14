@@ -27,8 +27,6 @@
 		"packages/*/scripts/**/*.ts",
 		"apps/*/src/**/*.ts",
 		"apps/*/src/**/*.tsx",
-		"apps/*/*.ts",
-		"apps/*/worker/**/*.ts",
-		"apps/*/worker-configuration.d.ts"
+		"apps/*/*.ts"
 	]
 }

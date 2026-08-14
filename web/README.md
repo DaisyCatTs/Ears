@@ -103,10 +103,11 @@ bun run deploy       # build + publish to skin.daisy.cat
 Static assets on Cloudflare Workers, with no Worker script — there is nothing to run on a server.
 The page says skins stay in your browser, and that is literally true: no upload endpoint exists.
 
-There is one exception to "no server": `worker/index.ts` proxies a public Mojang profile lookup for
-the username box, because Mojang sends no CORS headers and a browser cannot call it directly. The
-old manipulator routed that through two third-party `b-cdn.net` proxies; this is our own, stores
-nothing, and is never involved in editing or export.
+The username box is the one part that talks to anyone: it fetches from **crafthead.net**, which
+serves skins with permissive CORS. Mojang's own API cannot be used — it sends no CORS headers, so a
+browser cannot call it, and it answers **403 to datacenter traffic**, so proxying it through a
+Worker of our own does not help either (tried, deployed, measured). That request carries a username
+and nothing else, and never touches the skin you are editing.
 
 One caveat to the privacy claim: Cloudflare injects its Web Analytics beacon
 (`static.cloudflareinsights.com`) into the deployed page automatically. It does not see skins, but
