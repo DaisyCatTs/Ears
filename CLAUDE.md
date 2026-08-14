@@ -29,10 +29,8 @@ regular files, or Gradle will try to run in the root dir.
 - `publish-curseforge/`, `publish-modrinth/` — publishing-only builds; a `switch (target)` mapping
   each platform to game versions/loaders/stability.
 - `web/` — the TypeScript side (see below).
-- `manipulator/` — the **old** browser Manipulator (three.js r122 + TeaVM). Kept only as reference
-  while `web/` is built: `ears-common.js` is a dangling symlink into a TeaVM build whose Gradle
-  tasks were deleted upstream in `081aa8c`, so this cannot run. It is still the only implementation
-  of a few things (the v0 write path, the compatibility-notice table, the preview geometry).
+- (`manipulator/` — the old TeaVM + three.js r122 editor — was deleted once `web/` reached parity.
+  `git show legacy-ports:manipulator/index.html` still has it if a detail needs checking.)
 
 ## Common source sets
 

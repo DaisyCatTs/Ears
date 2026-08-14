@@ -103,11 +103,20 @@ bun run deploy       # build + publish to skin.daisy.cat
 Static assets on Cloudflare Workers, with no Worker script — there is nothing to run on a server.
 The page says skins stay in your browser, and that is literally true: no upload endpoint exists.
 
-One caveat to that claim: Cloudflare injects its Web Analytics beacon
+There is one exception to "no server": `worker/index.ts` proxies a public Mojang profile lookup for
+the username box, because Mojang sends no CORS headers and a browser cannot call it directly. The
+old manipulator routed that through two third-party `b-cdn.net` proxies; this is our own, stores
+nothing, and is never involved in editing or export.
+
+One caveat to the privacy claim: Cloudflare injects its Web Analytics beacon
 (`static.cloudflareinsights.com`) into the deployed page automatically. It does not see skins, but
 it is a third-party script on a page that advertises privacy — turn it off in the Cloudflare
 dashboard (Web Analytics / Browser Insights for the zone) if that bothers you.
 
-Not yet ported from the old manipulator: wing and cape texture upload, the sample skin, loading a
-skin by username, the compatibility-notice table, and copy-to-clipboard. `manipulator/` at the repo
-root stays until those land.
+Everything the old manipulator did is here: wing and cape upload with the legacy conversions, a
+sample skin, load-by-username, the compatibility notices, and copy-to-clipboard. The old
+`manipulator/` directory has been deleted; `git show legacy-ports:manipulator/index.html` has it if
+a detail ever needs checking.
+
+Deliberately not carried over: the `xyzzy` and `idkfa` console cheats that hid the chest and cape
+sections. Both are just visible now.

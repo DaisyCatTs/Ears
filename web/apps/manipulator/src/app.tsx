@@ -16,6 +16,8 @@ export function App() {
 	const [exportProblems, setExportProblems] = useState<string[]>([]);
 	const [textureNotice, setTextureNotice] = useState<string | null>(null);
 	const [copied, setCopied] = useState(false);
+	const [username, setUsername] = useState('');
+	const [looking, setLooking] = useState(false);
 	const fileRef = useRef<HTMLInputElement>(null);
 
 	const loadBytes = useCallback(
@@ -98,6 +100,27 @@ export function App() {
 		[actions, state.alfalfa],
 	);
 
+	const onLookup = async () => {
+		const name = username.trim();
+		if (!name) return;
+		setLooking(true);
+		try {
+			// our own Worker, because Mojang's API sends no CORS headers; see worker/index.ts
+			const res = await fetch(`/api/skin/${encodeURIComponent(name)}`);
+			if (!res.ok) {
+				const body = (await res.json().catch(() => null)) as { error?: string } | null;
+				setError(body?.error ?? `Could not load a skin for "${name}".`);
+				return;
+			}
+			loadBytes(new Uint8Array(await res.arrayBuffer()));
+			if (res.headers.get('x-skin-model') === 'slim') actions.setSlim(true);
+		} catch {
+			setError('Could not reach the skin lookup service.');
+		} finally {
+			setLooking(false);
+		}
+	};
+
 	const onCopy = async () => {
 		if (!state.original) return;
 		const result = exportSkin(state.original, state.features, state.alfalfa);
@@ -139,6 +162,22 @@ export function App() {
 					<Button onClick={() => actions.redo()} disabled={!canRedo} title="Ctrl+Shift+Z">
 						Redo
 					</Button>
+					<span className="flex items-center gap-1">
+						<input
+							type="text"
+							value={username}
+							onChange={(e) => setUsername(e.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter') void onLookup();
+							}}
+							placeholder="username"
+							aria-label="Load a player's skin by username"
+							className="w-28 rounded border border-edge bg-surface px-2 py-1 text-ink placeholder:text-muted"
+						/>
+						<Button onClick={() => void onLookup()} disabled={!username.trim() || looking}>
+							{looking ? '…' : 'Load'}
+						</Button>
+					</span>
 					<Button onClick={() => actions.load(decodeSkin(buildSample().bytes))} title="load a generated example">
 						Sample
 					</Button>

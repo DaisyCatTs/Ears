@@ -19,6 +19,8 @@ export interface LoadedSkin {
 	features: EarsFeatures;
 	alfalfa: AlfalfaData;
 	notices: Notice[];
+	/** Overlay parts to hide on load, keyed by part name. */
+	hideOverlays?: string[];
 }
 
 export interface Notice {
@@ -38,13 +40,26 @@ export function decodeSkin(bytes: Uint8Array): LoadedSkin {
 		throw new Error(`That image is ${image.width}x${image.height}; skins are 64x64.`);
 	}
 
+	const hideOverlays: string[] = [];
 	if (image.width === 64 && image.height === 32) {
+		const opaqueHat = isFullyOpaque(image, 32, 0, 32, 8);
 		image = convertLegacySkin(image);
 		notices.push({
 			kind: 'warn',
 			message: 'Converted a legacy 64x32 skin to 64x64',
 			detail: 'The second arm and leg were mirrored from the first, as Minecraft does.',
 		});
+		if (opaqueHat) {
+			// Skins from before alpha was used often have a solid hat layer, which would render as
+			// a box around the head. Hide it rather than edit their pixels — the toggle is right
+			// there in the Model section if they want it back.
+			hideOverlays.push('head');
+			notices.push({
+				kind: 'warn',
+				message: 'The hat layer is solid, so it is hidden',
+				detail: 'Old skins often fill it in rather than leaving it transparent. Turn "Hat" back on to see it.',
+			});
+		}
 	} else if (image.width !== 64 || image.height !== 64) {
 		throw new Error(`Skins must be 64x64 (or a legacy 64x32); this one is ${image.width}x${image.height}.`);
 	} else {
@@ -78,7 +93,16 @@ export function decodeSkin(bytes: Uint8Array): LoadedSkin {
 		notices.push({ kind: 'ok', message: 'Emissive palette found' });
 	}
 
-	return { image, original, features, alfalfa, notices };
+	return { image, original, features, alfalfa, notices, hideOverlays };
+}
+
+function isFullyOpaque(img: SkinImage, x: number, y: number, w: number, h: number): boolean {
+	for (let dy = 0; dy < h; dy++) {
+		for (let dx = 0; dx < w; dx++) {
+			if (((img.getARGB(x + dx, y + dy) >>> 24) & 0xff) !== 0xff) return false;
+		}
+	}
+	return true;
 }
 
 /** The vanilla 64x32 → 64x64 conversion: mirror the single arm and leg into the second set. */

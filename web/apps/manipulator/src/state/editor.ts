@@ -91,6 +91,12 @@ function reducer(state: EditorState, action: Action): EditorState {
 				features: features.enabled ? { ...rest, earAnchor: rest.earAnchor ?? 'CENTER' } : EMPTY_FEATURES,
 				alfalfa,
 				notices: action.skin.notices,
+				overlays: Object.fromEntries(
+					Object.keys(INITIAL_STATE.overlays).map((part) => [
+						part,
+						!(action.skin.hideOverlays ?? []).includes(part),
+					]),
+				),
 				past: [],
 				future: [],
 			};

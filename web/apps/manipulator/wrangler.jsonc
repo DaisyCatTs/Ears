@@ -3,11 +3,15 @@
 	"name": "ears-manipulator",
 	"compatibility_date": "2026-08-13",
 
-	// No `main`: the editor is entirely static. Everything — decoding the skin, rendering the
-	// preview, encoding the export — happens in the browser, so there is no Worker script and
-	// nothing is ever uploaded anywhere.
+	// The editor itself is static — decoding the skin, rendering the preview and encoding the
+	// export all happen in the browser, and no skin is ever uploaded. The Worker exists for exactly
+	// one thing: proxying a public Mojang profile lookup, which a browser cannot do itself because
+	// Mojang sends no CORS headers. Everything else falls through to the assets.
+	"main": "./worker/index.ts",
+
 	"assets": {
 		"directory": "./dist",
+		"binding": "ASSETS",
 		// unmatched paths serve index.html rather than a 404, for client-side routes later on
 		"not_found_handling": "single-page-application"
 	},

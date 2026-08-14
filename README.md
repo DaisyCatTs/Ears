@@ -28,8 +28,8 @@ made for upstream Ears work here and vice versa.
 Get it and/or learn more at [CurseForge](https://www.curseforge.com/minecraft/mc-mods/ears), [Modrinth](https://modrinth.com/mod/ears),
 or [Glass Repo](https://glass-repo.net/repo/mod/ears).
 
-Check out the [Manipulator](https://unascribed.com/ears)! (A rewrite lives in `web/`; the original
-`manipulator/` cannot be built from source since TeaVM was removed upstream.)
+Check out the **[Manipulator](https://skin.daisy.cat)** — rebuilt, and running entirely in your
+browser.
 
 **Mappings Notice**: the supported ports are all on Mojang mappings. Upstream spans Plasma, Yarn and
 MCP as well, and references to those still appear in common code and in the git history.
