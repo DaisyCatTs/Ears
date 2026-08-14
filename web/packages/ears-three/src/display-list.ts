@@ -39,7 +39,7 @@ function anchorMatrix(part: string, slim: boolean): THREE.Matrix4 {
 	return m;
 }
 
-function applyMoves(moves: Move[], slim: boolean): THREE.Matrix4 {
+export function applyMoves(moves: Move[], slim: boolean): THREE.Matrix4 {
 	// Minecraft's Z runs the other way from three's
 	const mat = new THREE.Matrix4().makeScale(1, 1, -1);
 	for (const move of moves) {
@@ -115,6 +115,14 @@ export function buildDisplayList(objects: RenderObject[], opts: BuildOptions): T
 					alphaTest: 0.01,
 					flatShading: true,
 					fog: false,
+					// Several features are drawn exactly in the plane of the body part they hang off:
+					// the arm claws land on x=±8, which is precisely the arm's outer face. Without a
+					// bias the two planes fight for the same pixels and the claw renders as a torn
+					// patch on the hand. The same bias every feature quad gets keeps their order
+					// among themselves unchanged, so only body-vs-feature ties are broken.
+					polygonOffset: true,
+					polygonOffsetFactor: -1,
+					polygonOffsetUnits: -1,
 				});
 
 		const mesh = new THREE.Mesh(geom, material);

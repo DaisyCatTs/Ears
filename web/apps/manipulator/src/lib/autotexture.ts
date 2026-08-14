@@ -135,11 +135,34 @@ function put(img: SkinImage, x: number, y: number, colour: number): void {
 }
 
 /**
- * An 8x8 ear: pointed, with a soft inner ear and a darker tip. Written as row spans so the shape is
- * legible as a shape rather than as arithmetic.
+ * Which way an ear hangs, which decides which end of the texture is the tip.
+ *
+ * The renderer maps texture row 0 to the top of the quad in every ear mode, but the quads themselves
+ * point different ways. ABOVE and OUT stand the ear up off the head, so the tip belongs at row 0.
+ * SIDES and FLOPPY hang it down the side of the head instead, so drawing a tip at row 0 pins the
+ * narrow end to the skull and leaves the wide end flapping — the ear comes out upside down.
  */
-function drawEar(img: SkinImage, x: number, y: number, p: Palette, withInner: boolean): void {
-	const rows: [number, number][] = [
+export type EarShape = 'up' | 'down';
+
+export function earShapeFor(mode: string | undefined): EarShape {
+	return mode === 'SIDES' || mode === 'FLOPPY' ? 'down' : 'up';
+}
+
+/**
+ * An 8x8 ear, drawn as row spans so the silhouette is legible as a shape rather than as arithmetic.
+ *
+ * Upright ears taper to a point. Hanging ears are the other way up and end in a round tip, which is
+ * what reads as floppy rather than as a spike someone stuck on sideways.
+ */
+function drawEar(
+	img: SkinImage,
+	x: number,
+	y: number,
+	p: Palette,
+	withInner: boolean,
+	shape: EarShape,
+): void {
+	const pointed: [number, number][] = [
 		[3, 5],
 		[2, 6],
 		[2, 6],
@@ -149,12 +172,28 @@ function drawEar(img: SkinImage, x: number, y: number, p: Palette, withInner: bo
 		[0, 8],
 		[0, 8],
 	];
+	// kept horizontally symmetric on purpose: SIDES draws both ears with the same orientation, so
+	// a lopsided silhouette would come out mirrored on one side of the head
+	const floppy: [number, number][] = [
+		[2, 6],
+		[1, 7],
+		[0, 8],
+		[0, 8],
+		[1, 7],
+		[1, 7],
+		[2, 6],
+		[3, 5],
+	];
+	const rows = shape === 'up' ? pointed : floppy;
+	// the tip is whichever end the shape narrows to, and it catches less light than the rest
+	const tipRow = shape === 'up' ? 0 : rows.length - 1;
 	rows.forEach(([from, to], row) => {
 		for (let dx = from; dx < to; dx++) {
 			const isEdge = dx === from || dx === to - 1;
-			const isInner = withInner && !isEdge && row >= 1 && row < 7;
+			const isInner =
+				withInner && !isEdge && Math.abs(row - tipRow) >= 1 && Math.abs(row - tipRow) <= 6;
 			let colour = p.fur;
-			if (row === 0) colour = p.furDark; // the tip catches less light
+			if (row === tipRow) colour = p.furDark;
 			else if (isInner) colour = p.inner;
 			else if (isEdge) colour = shade(p.fur, 0.9);
 			else if ((dx + row) % 4 === 0) colour = shade(p.fur, 0.94);
@@ -247,14 +286,26 @@ function drawHorn(img: SkinImage, r: Region, p: Palette): void {
 }
 
 /** Two tapered claws rather than a solid square, which reads as a chunk taken out of the hand. */
+/**
+ * A 4x4 claw patch.
+ *
+ * All four claw quads put texture row 0 at the far end — the toes on the feet, the fingertips on the
+ * hands — so the claws point up the rows and the pad fills in behind them. Confirmed against the
+ * display list rather than assumed, because the four quads are drawn with three different
+ * rotation/flip combinations and it is not obvious from the call sites which way is out.
+ */
 function drawClaws(img: SkinImage, r: Region, p: Palette): void {
-	const tip = mix(p.cream, 0xffffffff, 0.35);
-	const root = shade(tip, 0.82);
-	for (const cx of [0, 2]) {
-		for (let y = 1; y < 4; y++) {
-			for (let x = 0; x < 2; x++) {
-				if (y === 1 && x === 1) continue; // point the tip
-				put(img, r.x + cx + x, r.y + y, y >= 3 ? root : tip);
+	const claw = mix(p.cream, 0xffffffff, 0.45);
+	const clawShade = shade(claw, 0.84);
+	const pad = shade(p.fur, 0.86);
+	for (let x = 0; x < 4; x++) {
+		// two claws, each two texels wide, with a gap between them
+		const isClaw = x === 0 || x === 2;
+		for (let y = 0; y < 4; y++) {
+			if (y < 2) {
+				if (isClaw) put(img, r.x + x, r.y + y, y === 0 ? claw : clawShade);
+			} else {
+				put(img, r.x + x, r.y + y, y === 3 ? shade(pad, 0.9) : pad);
 			}
 		}
 	}
@@ -275,19 +326,20 @@ export function autoTexture(source: SkinImage, features: PartialFeatures): AutoT
 	if (missing.length === 0) return { image: img, filled: [] };
 
 	const p = paletteFor(img);
+	const shape = earShapeFor(features.earMode);
 
 	for (const name of missing) {
 		const r = FEATURE_REGIONS[name];
 		switch (name) {
 			case 'ears':
 				// one 16x8 strip covers both ears: two of them, with a gap, not a filled block
-				drawEar(img, r.x, r.y, p, true);
-				drawEar(img, r.x + 8, r.y, p, true);
+				drawEar(img, r.x, r.y, p, true, shape);
+				drawEar(img, r.x + 8, r.y, p, true, shape);
 				break;
 			case 'earsBack':
 				// no inner ear on the backs, so the silhouette still matches from behind
-				drawEar(img, r.x, r.y, p, false);
-				drawEar(img, r.x, r.y + 8, p, false);
+				drawEar(img, r.x, r.y, p, false, shape);
+				drawEar(img, r.x, r.y + 8, p, false, shape);
 				break;
 			case 'tail':
 				drawTail(img, r, p);
