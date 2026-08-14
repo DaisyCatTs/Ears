@@ -26,7 +26,7 @@ export function InspectorPanel({
 	const [showEmissive, setShowEmissive] = useState(true);
 
 	return (
-		<div className="flex h-full flex-col overflow-y-auto">
+		<div className="flex flex-col lg:h-full lg:overflow-y-auto">
 			<Section title="Skin data">
 				<SkinMap derived={derived} showConfig={showConfig} showAlfalfa={showAlfalfa} showEmissive={showEmissive} />
 				<div className="mt-1 flex flex-col gap-1">
@@ -213,5 +213,11 @@ function SkinMap({
 		}
 	}, [derived, showConfig, showAlfalfa, showEmissive]);
 
-	return <canvas ref={ref} className="pixelated w-full rounded border border-edge bg-surface" />;
+	return (
+		<canvas
+			ref={ref}
+			aria-label="Skin with the Ears data regions highlighted"
+			className="pixelated w-full rounded border border-edge bg-surface"
+		/>
+	);
 }

@@ -40,7 +40,7 @@ export function ConfigPanel({
 	const snoutOn = features.snoutWidth > 0;
 
 	return (
-		<div className="flex h-full flex-col overflow-y-auto">
+		<div className="flex flex-col lg:h-full lg:overflow-y-auto">
 			<Section title="Presets">
 				<div className="grid grid-cols-3 gap-1">
 					{PRESETS.map((preset) => (

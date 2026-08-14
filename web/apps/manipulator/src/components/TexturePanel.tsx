@@ -46,6 +46,7 @@ export function TexturePanel({
 		<div className="flex items-center gap-3">
 			<canvas
 				ref={canvasRef}
+				aria-label={`${label} preview`}
 				className="pixelated h-16 w-20 shrink-0 rounded border border-edge bg-surface"
 				style={{ imageRendering: 'pixelated' }}
 			/>

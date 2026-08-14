@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="6" fill="#1b1c24"/>
+  <!-- two ears over a head, the shape the whole mod is named for -->
+  <path d="M7 14 L11 5 L15 14 Z" fill="#e0ac69"/>
+  <path d="M9 13 L11 8.5 L13 13 Z" fill="#e8a0b4"/>
+  <path d="M17 14 L21 5 L25 14 Z" fill="#e0ac69"/>
+  <path d="M19 13 L21 8.5 L23 13 Z" fill="#e8a0b4"/>
+  <rect x="7" y="13" width="18" height="14" rx="2" fill="#e0ac69"/>
+  <rect x="11" y="18" width="3" height="3" fill="#3a3550"/>
+  <rect x="18" y="18" width="3" height="3" fill="#3a3550"/>
+</svg>

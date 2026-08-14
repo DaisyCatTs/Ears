@@ -12,7 +12,17 @@
 html,
 body,
 #root {
-	height: 100%;
+	/* min-height, not height: on narrow screens the panels stack and the page scrolls, while the
+	   desktop three-pane layout pins itself to the viewport */
+	min-height: 100%;
+}
+
+@media (min-width: 1024px) {
+	html,
+	body,
+	#root {
+		height: 100%;
+	}
 }
 
 body {

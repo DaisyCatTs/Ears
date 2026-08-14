@@ -180,13 +180,13 @@ export function App() {
 	};
 
 	return (
-		<div className="flex h-full flex-col">
-			<header className="flex items-center justify-between border-b border-edge bg-panel px-3 py-2">
+		<div className="flex min-h-full flex-col lg:h-full">
+			<header className="flex flex-wrap items-center justify-between gap-2 border-b border-edge bg-panel px-3 py-2">
 				<div className="flex items-baseline gap-2">
 					<h1 className="text-sm font-semibold">Ears Manipulator</h1>
 					<span className="text-[11px] text-muted">everything stays in your browser</span>
 				</div>
-				<div className="flex items-center gap-1.5">
+				<div className="flex flex-wrap items-center gap-1.5">
 					<Button onClick={() => actions.undo()} disabled={!canUndo} title="Ctrl+Z">
 						Undo
 					</Button>
@@ -223,6 +223,7 @@ export function App() {
 						ref={fileRef}
 						type="file"
 						accept="image/png"
+						aria-label="Import a skin PNG"
 						className="hidden"
 						onChange={(e) => {
 							const file = e.target.files?.[0];
@@ -252,8 +253,8 @@ export function App() {
 				</div>
 			) : null}
 
-			<main className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[300px_1fr_320px]">
-				<aside className="min-h-0 border-edge lg:border-r">
+			<main className="flex flex-1 flex-col lg:grid lg:min-h-0 lg:grid-cols-[300px_1fr_320px]">
+				<aside className="border-edge lg:min-h-0 lg:border-r">
 					<ConfigPanel
 						features={state.features}
 						slim={state.slim}
@@ -272,7 +273,7 @@ export function App() {
 					/>
 				</aside>
 				{/* stacked on narrow screens, where the grid gives it no height of its own */}
-				<div className="min-h-[420px] bg-surface lg:min-h-0">
+				<div className="min-h-[420px] bg-surface lg:min-h-0 lg:flex-1">
 					<Suspense
 						fallback={
 							<div className="grid h-full place-content-center text-muted">Loading the preview…</div>
@@ -281,7 +282,7 @@ export function App() {
 						<PreviewPanel derived={derived} slim={state.slim} overlays={state.overlays} />
 					</Suspense>
 				</div>
-				<aside className="min-h-0 border-edge lg:border-l">
+				<aside className="border-edge lg:min-h-0 lg:border-l">
 					<InspectorPanel
 						derived={derived}
 						features={state.features}
