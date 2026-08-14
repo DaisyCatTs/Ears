@@ -1,0 +1,20 @@
+{
+	"read": {
+		"version": 1,
+		"entries": {
+			"wing": {
+				"bytes": 121,
+				"sha256": "32b88827417ccd1ac3a5df330e03770f7b99d516b26b4950f3b2b938cce4f4b3"
+			}
+		}
+	},
+	"afterDetect": {
+		"version": 1,
+		"entries": {
+			"wing": {
+				"bytes": 121,
+				"sha256": "32b88827417ccd1ac3a5df330e03770f7b99d516b26b4950f3b2b938cce4f4b3"
+			}
+		}
+	}
+}

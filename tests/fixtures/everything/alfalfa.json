@@ -1,0 +1,28 @@
+{
+	"read": {
+		"version": 1,
+		"entries": {
+			"cape": {
+				"bytes": 119,
+				"sha256": "873fa2938008be3d13b0e0fdf41cd0d4fddff749f5971eda235292fa04c9b3c5"
+			},
+			"wing": {
+				"bytes": 121,
+				"sha256": "32b88827417ccd1ac3a5df330e03770f7b99d516b26b4950f3b2b938cce4f4b3"
+			}
+		}
+	},
+	"afterDetect": {
+		"version": 1,
+		"entries": {
+			"cape": {
+				"bytes": 119,
+				"sha256": "873fa2938008be3d13b0e0fdf41cd0d4fddff749f5971eda235292fa04c9b3c5"
+			},
+			"wing": {
+				"bytes": 121,
+				"sha256": "32b88827417ccd1ac3a5df330e03770f7b99d516b26b4950f3b2b938cce4f4b3"
+			}
+		}
+	}
+}

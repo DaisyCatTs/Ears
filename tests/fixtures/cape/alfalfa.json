@@ -1,0 +1,20 @@
+{
+	"read": {
+		"version": 1,
+		"entries": {
+			"cape": {
+				"bytes": 119,
+				"sha256": "873fa2938008be3d13b0e0fdf41cd0d4fddff749f5971eda235292fa04c9b3c5"
+			}
+		}
+	},
+	"afterDetect": {
+		"version": 1,
+		"entries": {
+			"cape": {
+				"bytes": 119,
+				"sha256": "873fa2938008be3d13b0e0fdf41cd0d4fddff749f5971eda235292fa04c9b3c5"
+			}
+		}
+	}
+}
