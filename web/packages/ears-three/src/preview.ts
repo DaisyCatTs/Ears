@@ -57,7 +57,7 @@ export class Preview {
 
 	private yaw = 25;
 	private pitch = 10;
-	private zoom = 55;
+	private zoom = 42;
 	private dragging = false;
 
 	constructor(private readonly canvas: HTMLCanvasElement) {
@@ -181,10 +181,11 @@ export class Preview {
 		const r = this.zoom;
 		this.camera.position.set(
 			Math.sin(yawRad) * Math.cos(pitchRad) * r,
-			Math.sin(pitchRad) * r,
+			Math.sin(pitchRad) * r + 1,
 			Math.cos(yawRad) * Math.cos(pitchRad) * r,
 		);
-		this.camera.lookAt(0, 0, 0);
+		// the model spans roughly -18..22, so aim a little below the origin to centre it in frame
+		this.camera.lookAt(0, 1, 0);
 		this.renderer.render(this.scene, this.camera);
 	}
 

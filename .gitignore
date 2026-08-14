@@ -11,3 +11,4 @@ node_modules
 /release
 /publish-*/build
 /realskins
+web/apps/manipulator/test-results/

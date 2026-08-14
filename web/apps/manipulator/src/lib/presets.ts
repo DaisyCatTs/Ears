@@ -227,3 +227,55 @@ export function applyPreset(preset: Preset, base: PartialFeatures): PartialFeatu
 		...preset.features,
 	};
 }
+
+/**
+ * Adds volume to whatever is currently set.
+ *
+ * Ears draws ears and tails as flat quads, and the only way to get real thickness out of the format
+ * is the crossed modes: CROSS is two planes at right angles, STAR is four. Segments and a bend also
+ * help a tail read as fur rather than card.
+ */
+export function fluffier(features: PartialFeatures): PartialFeatures {
+	const tailMode = (() => {
+		switch (features.tailMode) {
+			case 'NONE':
+				return 'NONE';
+			case 'CROSS':
+			case 'CROSS_OVERLAP':
+				return 'STAR';
+			case 'STAR':
+			case 'STAR_OVERLAP':
+				return 'STAR_OVERLAP';
+			default:
+				// a flat directional tail becomes a crossed one, keeping roughly where it points
+				return 'CROSS';
+		}
+	})() as PartialFeatures['tailMode'];
+
+	const earMode = (() => {
+		switch (features.earMode) {
+			case 'ABOVE':
+			case 'SIDES':
+			case 'OUT':
+				return 'CROSS';
+			case 'TALL':
+				return 'TALL_CROSS';
+			default:
+				return features.earMode;
+		}
+	})() as PartialFeatures['earMode'];
+
+	const segments = features.tailMode === 'NONE' ? features.tailSegments : 4;
+	// spread the existing lead angle across the extra segments so a longer tail still curves
+	const lead = features.tailBend0 || 35;
+	return {
+		...features,
+		earMode,
+		tailMode,
+		tailSegments: segments,
+		tailBend0: lead,
+		tailBend1: features.tailBend1 || Math.round(lead * 0.45),
+		tailBend2: features.tailBend2 || Math.round(lead * 0.25),
+		tailBend3: features.tailBend3 || Math.round(lead * 0.15),
+	};
+}

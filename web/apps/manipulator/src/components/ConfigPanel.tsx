@@ -19,6 +19,7 @@ export function ConfigPanel({
 	onUploadTexture,
 	onRemoveTexture,
 	onPreset,
+	onFluffier,
 }: {
 	features: PartialFeatures;
 	slim: boolean;
@@ -34,6 +35,7 @@ export function ConfigPanel({
 	onUploadTexture: (kind: 'wing' | 'cape', file: File) => void;
 	onRemoveTexture: (kind: 'wing' | 'cape') => void;
 	onPreset: (preset: Preset) => void;
+	onFluffier: () => void;
 }) {
 	const earsOn = features.earMode !== 'NONE';
 	const tailOn = features.tailMode !== 'NONE';
@@ -49,9 +51,12 @@ export function ConfigPanel({
 						</Button>
 					))}
 				</div>
-				<p className="text-[11px] text-muted">
-					A starting point — everything below stays editable.
-				</p>
+				<div className="flex items-center justify-between gap-2">
+					<p className="text-[11px] text-muted">A starting point — all of it stays editable.</p>
+					<Button onClick={onFluffier} title="crossed planes instead of flat ones, and a longer tail">
+						Fluffier
+					</Button>
+				</div>
 			</Section>
 
 			<Section title="Model">

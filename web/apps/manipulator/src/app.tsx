@@ -7,7 +7,7 @@ import { derive } from './lib/derive.js';
 import { detectSlim } from './lib/profile.js';
 import { buildSample } from './lib/sample.js';
 import { autoTexture, describeRegions, missingRegions } from './lib/autotexture.js';
-import { applyPreset, type Preset } from './lib/presets.js';
+import { applyPreset, fluffier, type Preset } from './lib/presets.js';
 import { sampleWing } from './lib/sample.js';
 import { decodeSkin, download, exportSkin } from './lib/skin.js';
 import { prepareCape, prepareWing, withEntry, withoutEntry } from './lib/textures.js';
@@ -166,6 +166,18 @@ export function App() {
 		[actions, state.features, state.alfalfa, state.original],
 	);
 
+	const onFluffier = useCallback(() => {
+		const next = fluffier(state.features);
+		actions.patch(next);
+		if (state.original) {
+			const missing = missingRegions(state.original, next);
+			if (missing.length > 0) {
+				const { image } = autoTexture(state.original, next);
+				actions.setSkin(image, image);
+			}
+		}
+	}, [actions, state.features, state.original]);
+
 	const onCopy = async () => {
 		if (!state.original) return;
 		const result = exportSkin(state.original, state.features, state.alfalfa);
@@ -284,6 +296,7 @@ export function App() {
 						onUploadTexture={(kind, file) => void onUploadTexture(kind, file)}
 						onRemoveTexture={onRemoveTexture}
 						onPreset={onPreset}
+						onFluffier={onFluffier}
 					/>
 				</aside>
 				{/* stacked on narrow screens, where the grid gives it no height of its own */}
