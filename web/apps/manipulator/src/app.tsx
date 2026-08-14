@@ -5,13 +5,17 @@ import { InspectorPanel } from './components/InspectorPanel.js';
 import { PreviewPanel } from './components/PreviewPanel.js';
 import { Button } from './components/ui.js';
 import { derive } from './lib/derive.js';
+import { buildSample } from './lib/sample.js';
 import { decodeSkin, download, exportSkin } from './lib/skin.js';
+import { prepareCape, prepareWing, withEntry, withoutEntry } from './lib/textures.js';
 import { useEditor } from './state/editor.js';
 
 export function App() {
 	const { state, actions, canUndo, canRedo, onKeyDown } = useEditor();
 	const [error, setError] = useState<string | null>(null);
 	const [exportProblems, setExportProblems] = useState<string[]>([]);
+	const [textureNotice, setTextureNotice] = useState<string | null>(null);
+	const [copied, setCopied] = useState(false);
 	const fileRef = useRef<HTMLInputElement>(null);
 
 	const loadBytes = useCallback(
@@ -64,6 +68,53 @@ export function App() {
 		[state.original, state.features, state.alfalfa],
 	);
 
+	const onUploadTexture = useCallback(
+		async (kind: 'wing' | 'cape', file: File) => {
+			try {
+				const bytes = new Uint8Array(await file.arrayBuffer());
+				const { entry, notice } = kind === 'wing' ? prepareWing(bytes) : prepareCape(bytes);
+				actions.setAlfalfa(withEntry(state.alfalfa, kind, entry));
+				// uploading a texture is a statement of intent; turn the feature on with it
+				if (kind === 'wing' && state.features.wingMode === 'NONE') {
+					actions.patch({ wingMode: 'SYMMETRIC_DUAL' });
+				}
+				if (kind === 'cape' && !state.features.capeEnabled) actions.patch({ capeEnabled: true });
+				setError(null);
+				setTextureNotice(notice ?? null);
+			} catch (e) {
+				setError(e instanceof Error ? e.message : String(e));
+			}
+		},
+		[actions, state.alfalfa, state.features.wingMode, state.features.capeEnabled],
+	);
+
+	const onRemoveTexture = useCallback(
+		(kind: 'wing' | 'cape') => {
+			actions.setAlfalfa(withoutEntry(state.alfalfa, kind));
+			if (kind === 'wing') actions.patch({ wingMode: 'NONE' });
+			else actions.patch({ capeEnabled: false });
+			setTextureNotice(null);
+		},
+		[actions, state.alfalfa],
+	);
+
+	const onCopy = async () => {
+		if (!state.original) return;
+		const result = exportSkin(state.original, state.features, state.alfalfa);
+		if (result.problems.length > 0) {
+			setExportProblems(result.problems);
+			return;
+		}
+		try {
+			const blob = new Blob([result.bytes as unknown as BlobPart], { type: 'image/png' });
+			await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+			setCopied(true);
+			setTimeout(() => setCopied(false), 1500);
+		} catch {
+			setError('Your browser would not let the page write to the clipboard.');
+		}
+	};
+
 	const onExport = () => {
 		if (!state.original) return;
 		const result = exportSkin(state.original, state.features, state.alfalfa);
@@ -88,7 +139,13 @@ export function App() {
 					<Button onClick={() => actions.redo()} disabled={!canRedo} title="Ctrl+Shift+Z">
 						Redo
 					</Button>
+					<Button onClick={() => actions.load(decodeSkin(buildSample().bytes))} title="load a generated example">
+						Sample
+					</Button>
 					<Button onClick={() => fileRef.current?.click()}>Import</Button>
+					<Button onClick={() => void onCopy()} disabled={!state.original}>
+						{copied ? 'Copied' : 'Copy'}
+					</Button>
 					<Button variant="primary" onClick={onExport} disabled={!state.original}>
 						Download skin
 					</Button>
@@ -106,6 +163,9 @@ export function App() {
 				</div>
 			</header>
 
+			{textureNotice ? (
+				<p className="border-b border-edge bg-panel px-3 py-2 text-muted">{textureNotice}</p>
+			) : null}
 			{error ? (
 				<p role="alert" className="border-b border-red-800 bg-red-950/60 px-3 py-2 text-red-200">
 					{error}
@@ -134,6 +194,10 @@ export function App() {
 						onReset={actions.resetEars}
 						hasWing={state.alfalfa.entries.has('wing')}
 						hasCape={state.alfalfa.entries.has('cape')}
+						wingTexture={derived?.wing ?? null}
+						capeTexture={derived?.cape ?? null}
+						onUploadTexture={(kind, file) => void onUploadTexture(kind, file)}
+						onRemoveTexture={onRemoveTexture}
 					/>
 				</aside>
 				{/* stacked on narrow screens, where the grid gives it no height of its own */}

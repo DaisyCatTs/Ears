@@ -30,9 +30,11 @@ function anchorMatrix(part: string, slim: boolean): THREE.Matrix4 {
 	if (rot[2]) m.multiply(new THREE.Matrix4().makeRotationZ(THREE.MathUtils.degToRad(-rot[2])));
 	if (rot[1]) m.multiply(new THREE.Matrix4().makeRotationY(THREE.MathUtils.degToRad(-rot[1])));
 	if (rot[0]) m.multiply(new THREE.Matrix4().makeRotationX(THREE.MathUtils.degToRad(-rot[0])));
-	// then to the part's own corner, which is where the renderer's coordinates start
+	// then to the part's own corner, which is where the renderer's coordinates start. Y is minus
+	// half the height, not plus: the renderer's part-local Y points down, and its origin is the
+	// bottom of the part — get this backwards and everything anchored to the head floats above it.
 	m.multiply(
-		new THREE.Matrix4().makeTranslation(-def.size[0] / 2, def.size[1] / 2, -def.size[2] / 2),
+		new THREE.Matrix4().makeTranslation(-def.size[0] / 2, -def.size[1] / 2, -def.size[2] / 2),
 	);
 	return m;
 }

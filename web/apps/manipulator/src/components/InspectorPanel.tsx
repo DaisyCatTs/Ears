@@ -2,6 +2,7 @@ import { alfalfa as alfalfaCodec, type AlfalfaData, type PartialFeatures } from 
 import { useEffect, useRef, useState } from 'react';
 
 import type { Derived } from '../lib/derive.js';
+import { compatibilityFor } from '../lib/notices.js';
 import type { Notice } from '../lib/skin.js';
 import { Section, Toggle } from './ui.js';
 
@@ -44,6 +45,8 @@ export function InspectorPanel({
 					))}
 				</Section>
 			) : null}
+
+			<CompatibilityNotices features={features} />
 
 			<Section title="Import">
 				{notices.length === 0 ? <p className="text-muted">Nothing loaded yet.</p> : null}
@@ -94,6 +97,28 @@ export function InspectorPanel({
 				</p>
 			</Section>
 		</div>
+	);
+}
+
+/** Which Ears versions render this configuration, and what older ones get wrong. */
+function CompatibilityNotices({ features }: { features: PartialFeatures }) {
+	const groups = compatibilityFor(features);
+	if (groups.length === 0) return null;
+	return (
+		<Section title="Older Ears versions">
+			{groups.map((g) => (
+				<div key={`${g.version}:${g.kind}`}>
+					<p className="text-muted">
+						{g.kind === 'requires' ? `Needs v${g.version}. Before it,` : `Fixed in v${g.version}. Before it,`}
+					</p>
+					<ul className="ml-4 list-disc">
+						{g.consequences.map((c) => (
+							<li key={c}>{c}</li>
+						))}
+					</ul>
+				</div>
+			))}
+		</Section>
 	);
 }
 

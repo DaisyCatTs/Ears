@@ -1,5 +1,6 @@
 import { EAR_ANCHORS, EAR_MODES, TAIL_MODES, WING_MODES, type PartialFeatures } from '@ears/protocol';
 
+import { TexturePanel } from './TexturePanel.js';
 import { Button, Field, Section, Select, Slider, Toggle } from './ui.js';
 
 export function ConfigPanel({
@@ -12,6 +13,10 @@ export function ConfigPanel({
 	onReset,
 	hasWing,
 	hasCape,
+	wingTexture,
+	capeTexture,
+	onUploadTexture,
+	onRemoveTexture,
 }: {
 	features: PartialFeatures;
 	slim: boolean;
@@ -22,6 +27,10 @@ export function ConfigPanel({
 	onReset: () => void;
 	hasWing: boolean;
 	hasCape: boolean;
+	wingTexture: ImageData | null;
+	capeTexture: ImageData | null;
+	onUploadTexture: (kind: 'wing' | 'cape', file: File) => void;
+	onRemoveTexture: (kind: 'wing' | 'cape') => void;
 }) {
 	const earsOn = features.earMode !== 'NONE';
 	const tailOn = features.tailMode !== 'NONE';
@@ -145,6 +154,14 @@ export function ConfigPanel({
 						label="Animate wings"
 					/>
 				</Field>
+				<TexturePanel
+					label="wing texture"
+					data={wingTexture}
+					accept="image/png"
+					hint="20x16, or a legacy 12x12"
+					onUpload={(file) => onUploadTexture('wing', file)}
+					onRemove={() => onRemoveTexture('wing')}
+				/>
 			</Section>
 
 			<Section title="Other">
@@ -165,6 +182,14 @@ export function ConfigPanel({
 						label="Cape"
 					/>
 				</Field>
+				<TexturePanel
+					label="cape texture"
+					data={capeTexture}
+					accept="image/png"
+					hint="20x16, or a 64x32 Minecraft cape"
+					onUpload={(file) => onUploadTexture('cape', file)}
+					onRemove={() => onRemoveTexture('cape')}
+				/>
 				<Field label="Emissive" hint="glowing pixels, keyed by a palette at (52,32)">
 					<Toggle checked={features.emissive} onChange={(emissive) => onPatch({ emissive })} label="Emissive" />
 				</Field>
