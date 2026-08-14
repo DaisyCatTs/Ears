@@ -260,12 +260,6 @@ switch (target) {
 		loaders = ['neoforge']
 		gameVersions = ['26.1', '26.1.1', '26.1.2', '26.2']
 		break
-	case "neoforge-26.3":
-		prefix = "NEOFORGE 26.3"
-		stability = 'beta'
-		loaders = ['neoforge']
-		gameVersions = ['26.3-snapshot-4']
-		break
 	default:
 		throw new Exception("Unknown target ${target}")
 }

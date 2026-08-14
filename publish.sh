@@ -26,17 +26,8 @@ if [ -n "$1" ]; then
 	mcmodcn="$common"
 else
 	common="
-		rift-1.13
-		stapi-b1.7.3
-		fabric-1.14 fabric-1.16 fabric-1.17 fabric-1.19 fabric-1.19.3 fabric-1.19.4 fabric-1.20
-		fabric-1.20.2 fabric-1.20.6 fabric-1.21 fabric-1.21.4 fabric-1.21.5 fabric-1.21.10 fabric-1.21.11 fabric-26.1
-		fabric-26.3
-		
-		forge-1.2 forge-1.4 forge-1.5 forge-1.6 forge-1.7 forge-1.8 forge-1.9 forge-1.12 forge-1.14
-		forge-1.15 forge-1.16 forge-1.17 forge-1.18 forge-1.19 forge-1.19.3 forge-1.19.4
-		
-		neoforge-1.20.2 neoforge-1.21 neoforge-1.21.4 neoforge-1.21.5 neoforge-1.21.10 neoforge-1.21.11 neoforge-26.1
-		neoforge-26.3"
+		fabric-1.21.11 fabric-26.1
+		neoforge-1.21.11 neoforge-26.1"
 	curse="$common"
 	modrinth="$common"
 	mcmodcn="$common"
@@ -232,10 +223,6 @@ if [ "$MCMODCN_COOKIE" != "-" ]; then
 			;;
 			neoforge-26.1)
 				title="26.1"
-				loaders="$neoforge"
-			;;
-			neoforge-26.3)
-				title="26.3"
 				loaders="$neoforge"
 			;;
 			*)

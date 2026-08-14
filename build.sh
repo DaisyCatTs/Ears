@@ -1,159 +1,60 @@
 #!/bin/bash -e
+#
+# Builds Ears Common and every supported platform, collecting the finished jars into artifacts/.
+#
+# Supported matrix: Fabric and NeoForge on 1.21.11 and 26.1. The 26.1 artifacts also declare
+# 26.1.x and 26.2; see publish-curseforge/build.gradle and publish-modrinth/build.gradle.
+#
+# Unlike the old multi-JDK version of this script, you only need one JDK that Gradle 9.2 can run
+# on (17 through 25). The 26.1 ports request a Java 25 toolchain, which Gradle downloads itself
+# via the foojay resolver, so JAVA*_HOME juggling is no longer needed.
+#
+# This script needs bash. On Windows, invoke the per-module wrapper instead:
+#   cd platform-fabric-1.21.11 && ./gradlew build
 
-if [[ "$(uname -s)" =~ ^CYGWIN || "$(uname -s)" =~ ^MINGW || "$(uname -s)" =~ ^MSYS ]]; then
-	echo "WARNING: Building Ears on Windows, even under a Linux-like environment, is not supported. Continue at your own peril."
-	sleep 3
+platforms="fabric-1.21.11 fabric-26.1 neoforge-1.21.11 neoforge-26.1"
+
+toBuild="$platforms"
+if [ -n "$1" ]; then
+	toBuild="$@"
 fi
 
-needShift=
-for j in 8 11 17 21 25; do
-	if [[ "$1" == "--download" && ! -e ".java/$j/bin/java" ]]; then
-		needShift=1
-		arch=$(uname -m)
-		case $arch in
-			x86_64) arch=x64 ;;
-			i386) arch=x86 ;;
-			i686) arch=x86 ;;
-			armv7*) arch=arm ;;
-			armv8*) arch=aarch64 ;;
-			aarch64*) arch=aarch64 ;;
-			ppc*le) arch=ppc64le ;;
-			ppc*) arch=ppc64 ;;
-			s390*) arch=s390x ;;
-			riscv*) arch=riscv64 ;;
-			*) echo "Unknown architecture; please download Java yourself" && exit 2 ;;
-		esac
-		mkdir -p .java/tmp
-		echo "Downloading Eclipse Temurin $j..."
-		curl -L "https://api.adoptium.net/v3/binary/latest/$j/ga/linux/$arch/jdk/hotspot/normal/eclipse?project=jdk" -o .java/tmp/$j.tar.gz || (echo "Failed to download Java $j for $arch" && exit 1)
-		rm -rf .java/tmp/$j .java/$j
-		mkdir -p .java/tmp/$j
-		cd .java/tmp/$j
-		echo "Extracting Eclipse Temurin $j..."
-		tar xf ../$j.tar.gz || (echo "Failed to extract Java $j" && exit 1)
-		mv * ../../$j
-		cd ../../..
-		rm -rf .java/tmp
+# chronic (moreutils) hides output unless a command fails; plain passthrough if it isn't installed
+quiet() {
+	if command -v chronic >/dev/null; then
+		chronic "$@"
+	else
+		"$@"
 	fi
-	if [ -d ".java/$j" ]; then
-		export JAVA${j}_HOME=$(pwd)/.java/$j
-	fi
-done
-
-if [ -d ".java/17" ]; then
-	export JAVA16_HOME=$JAVA17_HOME
-fi
-
-if [ "$needShift" == 1 ]; then
-	shift
-fi
-
-if [[ -z "$JAVA8_HOME" || -z "$JAVA11_HOME" || -z "$JAVA17_HOME" || -z "$JAVA25_HOME" ]]; then
-	echo "Building Ears requires Java 8, Java 11, Java 17, Java 21, and Java 25." 1>&2
-	echo "Please install them and set the JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, JAVA21_HOME, and JAVA25_HOME env vars." 1>&2
-	echo "You can get all four of these from https://adoptium.net/" 1>&2
-	echo "Alternatively, run this script again with --download as the first argument to do it for you. (This will only work on Linux, and will download and execute binaries from adoptium.net.)" 1>&2
-	exit 1
-fi
-
-if [ -n "$JAVA11_HOME" ]; then
-	export JAVA_HOME=$JAVA11_HOME
-fi
-if [ -z "$JAVA16_HOME" ]; then
-	export JAVA16_HOME=$JAVA17_HOME
-fi
-
-check_java() {
-	v=$(env -u_JAVA_OPTIONS $JAVA_HOME/bin/java -Xint -version 2>&1 | head -n1 |cut -d\" -f2)
-	query=$1
-	regex=$2
-	if [ -n "$3" ]; then
-		query="$2 or $3"
-		regex="$2|$3"
-	fi
-	highlighted=$(echo $v |grep -E --color=always "^($regex)" || (echo "Expected JAVA$1_HOME to point to Java $query, but instead it points at Java $v. Stop" 1>&2 && exit 2))
-	color=32
-	if [ -n "$3" ]; then
-		echo $v |grep -q "^$3" >/dev/null && color=33
-	fi
-	highlighted=$(echo $highlighted |sed "s/31/$color/" |sed 's/1.8/ 8/')
-	echo "Java $1: $highlighted"
 }
 
-JAVA_HOME=$JAVA8_HOME check_java 8 1.8
-check_java 11 11
-JAVA_HOME=$JAVA16_HOME check_java 16 16 17
-JAVA_HOME=$JAVA17_HOME check_java 17 17
-JAVA_HOME=$JAVA21_HOME check_java 21 21 25
-JAVA_HOME=$JAVA25_HOME check_java 25 25
-echo "Looks good."
-echo
-
-normal="forge-1.4 forge-1.5 forge-1.6 forge-1.7 forge-1.12 forge-1.14 forge-1.15 forge-1.16 fcl-b1.7.3 rift-1.13"
-needsJ8="forge-1.8 forge-1.9"
-needsJ16="fabric-1.17 forge-1.17"
-needsJ17="forge-1.18 fabric-1.14 fabric-1.19 forge-1.19 fabric-1.19.3 forge-1.19.3 fabric-1.16 fabric-1.19.4 forge-1.19.4 fabric-1.20 fabric-1.20.2 neoforge-1.20.2 stapi-b1.7.3"
-needsJ21="fabric-1.21 neoforge-1.21 fabric-1.20.6 fabric-1.21.4 neoforge-1.21.4 fabric-1.21.5 neoforge-1.21.5 fabric-1.21.10 neoforge-1.21.10 fabric-1.21.11 neoforge-1.21.11"
-needsJ25="fabric-26.1 neoforge-26.1 fabric-26.3 neoforge-26.3"
-# these ones can't be built in parallel (or build so quickly that we shouldn't bother)
-special="vanilla-b1.7.3 forge-1.2"
-
-buildAll=1
-toBuild=" $normal $needsJ8 $needsJ16 $needsJ17 $needsJ21 $special "
-if [ -n "$1" ]; then
-	buildAll=0
-	toBuild=" $@ "
-fi
-
+mkdir -p artifacts
 for proj in $toBuild; do
 	rm -f artifacts/ears-$proj*
 done
+
+echo 'Building common...'
 (
-	echo 'Building common...'
 	cd common
-	#if [ "$buildAll" == "1" ]; then
-	#	addn=closure
-	#fi
-	JAVA_HOME=$JAVA8_HOME TERM=dumb chronic ./gradlew clean build $addn --stacktrace
+	TERM=dumb quiet ./gradlew clean build --stacktrace
 )
-build() {
-	for proj in $@; do
-		if echo "$toBuild" | grep -qF " $proj "; then
-			(
-				cd platform-$proj
-				rm -f build-ok
-				TERM=dumb chronic ./gradlew clean build --stacktrace && touch build-ok && echo "Built $proj successfully"
-				rm -f build/libs/*-dev.jar
-			) &
-		fi
-	done
-}
-count=0
-for proj in $toBuild; do
-	count=$(expr $count + 1)
-done
+
+count=$(echo $toBuild | wc -w)
 s=s
-if [ $count -eq 1 ]; then
+if [ "$count" -eq 1 ]; then
 	s=
 fi
 echo "Building $count platform$s..."
-build $normal
-build $nobodyCares
-JAVA_HOME=$JAVA8_HOME build $needsJ8
-JAVA_HOME=$JAVA16_HOME build $needsJ16
-JAVA_HOME=$JAVA17_HOME build $needsJ17
-JAVA_HOME=$JAVA21_HOME build $needsJ21
-JAVA_HOME=$JAVA25_HOME build $needsJ25
-wait
-for proj in $special; do
-	if echo "$toBuild" | grep -qF " $proj "; then
-		(
-			cd platform-$proj
-			rm -f build-ok
-			TERM=dumb chronic ./gradlew clean build --stacktrace && touch build-ok && echo "Built $proj successfully"
-		)
-	fi
+for proj in $toBuild; do
+	(
+		cd platform-$proj
+		rm -f build-ok
+		TERM=dumb quiet ./gradlew clean build --stacktrace && touch build-ok && echo "Built $proj successfully"
+		rm -f build/libs/*-dev.jar
+	) &
 done
+wait
+
 exit=
 for proj in $toBuild; do
 	if [ ! -e "platform-$proj/build-ok" ]; then
@@ -167,7 +68,6 @@ if [ "$exit" == "y" ]; then
 	exit 1
 fi
 echo 'All builds completed successfully.'
-mkdir -p artifacts
 for proj in $toBuild; do
 	cp platform-$proj/build/libs/* artifacts
 done

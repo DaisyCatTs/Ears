@@ -215,11 +215,6 @@ switch (target) {
 		stability = 'beta'
 		gameVersions = ['NeoForge', '26.1', '26.1.1', '26.1.2', '26.2']
 		break
-	case "neoforge-26.1":
-		prefix = "NEOFORGE 26.3"
-		stability = 'beta'
-		gameVersions = ['NeoForge', '26.3']
-		break
 	case "rift-1.13":
 		prefix = "RIFT 1.13.2"
 		stability = 'alpha'
