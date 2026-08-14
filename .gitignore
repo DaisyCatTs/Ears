@@ -8,3 +8,4 @@ node_modules
 /web/apps/*/dist
 /web/apps/*/e2e/screenshots
 /web/**/.wrangler
+/release

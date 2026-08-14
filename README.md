@@ -45,6 +45,9 @@ cd web && bun install && bun run test:all # the TypeScript protocol and its gold
 cd web && bun run dev                     # the manipulator, at localhost:5273
 ```
 
+`./build.sh` leaves the jars in `artifacts/`. Tagging `v*` builds them in CI and attaches them to a
+GitHub release, which is where to get them without building.
+
 CI builds all four ports, checks the fixtures still regenerate identically, runs both directions of
 the golden tests, and drives the editor in a real browser.
 
