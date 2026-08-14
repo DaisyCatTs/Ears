@@ -42,6 +42,10 @@ test, or on a server just as happily as in the editor.
 
 ### Things worth knowing before changing any of it
 
+- **Real skins are not 8-bit RGBA.** In a sample of fifteen pulled from live accounts, eight were
+  palette images, two were RGB with a tRNS colour key, and one was 4-bit indexed. `png.ts` handles
+  every colour type and bit depth, and `tests/png-variants/` checks the output against an
+  independent decoder rather than against itself.
 - **Never decode a skin through a canvas.** Alfalfa lives in the alpha channel and some browsers
   premultiply alpha on a canvas round trip, which silently destroys it. That's why `png.ts` works on
   raw bytes.
