@@ -7,273 +7,312 @@
 			"format": "raw",
 			"hasConfig": false,
 			"quads": 0,
-			"reencode": "n/a"
+			"reencode": "n/a",
+			"reencodeBytes": "n/a"
 		},
 		{
 			"name": "ears-above",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 2,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "ears-sides",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 4,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "ears-behind",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 4,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "ears-around",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 6,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "ears-floppy",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 4,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "ears-cross",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 4,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "ears-out",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 4,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "ears-tall",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 8,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "ears-tall-cross",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 4,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "ears-above-center",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 2,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "ears-above-front",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 2,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "ears-above-back",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 2,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "claws",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 10,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "horn",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 4,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "claws-and-horn",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 12,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "tail-down",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 2,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "tail-back",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 2,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "tail-up",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 2,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "tail-vertical",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 2,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "tail-cross",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 4,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "tail-cross-overlap",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 4,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "tail-star",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 8,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "tail-star-overlap",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 8,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "differs"
 		},
 		{
 			"name": "tail-4-segments",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 8,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "tail-extreme-bends",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 8,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "snout-min",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 10,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "snout-max",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 66,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "snout-offset",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 26,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "snout-zero-width",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 0,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "chest-half",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 8,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "chest-full",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 8,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "wings-symmetric-dual",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 4,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "wings-symmetric-single",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 2,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "wings-asymmetric-l",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 2,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "wings-asymmetric-r",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 2,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "wings-asymmetric-dual",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 4,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "wings-flat",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 2,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "wings-not-animated",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 4,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "wings-without-texture",
@@ -281,6 +320,7 @@
 			"hasConfig": true,
 			"quads": 0,
 			"reencode": "known-unstable",
+			"reencodeBytes": "differs",
 			"reencodeNote": "wingMode is forced to NONE after decode, so the animate bit stops being written"
 		},
 		{
@@ -288,70 +328,80 @@
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 4,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "cape",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 12,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "emissive",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 292,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "everything",
 			"format": "v1",
 			"hasConfig": true,
 			"quads": 424,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "v0-basic",
 			"format": "v0",
 			"hasConfig": true,
 			"quads": 12,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "v0-tail-star-overlap",
 			"format": "v0",
 			"hasConfig": true,
 			"quads": 16,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "v0-snout-chest-cape",
 			"format": "v0",
 			"hasConfig": true,
 			"quads": 58,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "v0-behind-null-anchor",
 			"format": "v0",
 			"hasConfig": true,
 			"quads": 4,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "bad-no-magic",
 			"format": "raw",
 			"hasConfig": false,
 			"quads": 0,
-			"reencode": "n/a"
+			"reencode": "n/a",
+			"reencodeBytes": "n/a"
 		},
 		{
 			"name": "bad-v1-truncated",
 			"format": "raw",
 			"hasConfig": false,
 			"quads": 0,
-			"reencode": "stable"
+			"reencode": "stable",
+			"reencodeBytes": "stable"
 		},
 		{
 			"name": "bad-v1-all-ones",
@@ -359,6 +409,7 @@
 			"hasConfig": false,
 			"quads": 532,
 			"reencode": "known-unstable",
+			"reencodeBytes": "differs",
 			"reencodeNote": "ear value 63 decodes to mode NONE with anchor BACK, and NONE writes no anchor"
 		},
 		{
@@ -367,6 +418,7 @@
 			"hasConfig": false,
 			"quads": 20,
 			"reencode": "known-unstable",
+			"reencodeBytes": "differs",
 			"reencodeNote": "junk decodes to ear mode NONE with anchor FRONT, and NONE writes no anchor"
 		},
 		{
@@ -374,7 +426,8 @@
 			"format": "raw",
 			"hasConfig": false,
 			"quads": 0,
-			"reencode": "n/a"
+			"reencode": "n/a",
+			"reencodeBytes": "n/a"
 		}
 	]
 }

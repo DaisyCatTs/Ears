@@ -135,21 +135,37 @@ public class Fixtures {
 
 		// "read" is what came straight out of the alpha channel; "afterDetect" is what the parser
 		// hands the renderer. They differ when a 12x12 wing gets upgraded to 20x16 in flight.
+		AlfalfaData afterDetect = decoded.alfalfa == null ? AlfalfaData.NONE : decoded.alfalfa;
 		Map<String, Object> alfalfaBoth = new LinkedHashMap<String, Object>();
 		alfalfaBoth.put("read", alfalfa(alfalfa));
-		alfalfaBoth.put("afterDetect", alfalfa(decoded.alfalfa == null ? AlfalfaData.NONE : decoded.alfalfa));
+		alfalfaBoth.put("afterDetect", alfalfa(afterDetect));
 		Files.write(new File(dir, "alfalfa.json").toPath(), Json.write(alfalfaBoth).getBytes(UTF8));
+
+		// Dump the payloads themselves too. The raw entries must match byte for byte; the derived
+		// ones (upgraded wings, emissive layers) are re-encoded PNGs, and a different deflate will
+		// produce different bytes for the same pixels, so those are compared as images.
+		dumpEntries(new File(dir, "alfalfa-read"), alfalfa);
+		dumpEntries(new File(dir, "alfalfa-after-detect"), afterDetect);
+		if (decoded.emissiveSkin != null && decoded.emissiveSkin.size() > 0) {
+			Files.write(new File(dir, "emissive-skin.png").toPath(), decoded.emissiveSkin.toByteArray());
+		}
+		if (decoded.emissiveWing != null && decoded.emissiveWing.size() > 0) {
+			Files.write(new File(dir, "emissive-wing.png").toPath(), decoded.emissiveWing.toByteArray());
+		}
 
 		CaptureDelegate capture = new CaptureDelegate(false, false);
 		EarsCommon.render(decoded, capture);
 		Files.write(new File(dir, "display-list.json").toPath(), Json.write(capture.getObjects()).getBytes(UTF8));
 
 		String reencode;
+		String reencodeBytes;
 		if (!decoded.enabled) {
 			// nothing decoded, so there is nothing to re-encode
 			reencode = "n/a";
+			reencodeBytes = "n/a";
 		} else {
 			reencode = checkStable(f, decoded, png) ? "stable" : "known-unstable";
+			reencodeBytes = sameConfigBlock(f, decoded, png) ? "stable" : "differs";
 		}
 
 		Map<String, Object> entry = new LinkedHashMap<String, Object>();
@@ -158,10 +174,38 @@ public class Fixtures {
 		entry.put("hasConfig", config != null);
 		entry.put("quads", capture.getObjects().size());
 		entry.put("reencode", reencode);
+		entry.put("reencodeBytes", reencodeBytes);
 		if (f.unstableReason != null) {
 			entry.put("reencodeNote", f.unstableReason);
 		}
 		return entry;
+	}
+
+	/**
+	 * Whether re-encoding the decoded features reproduces the original config block byte for byte.
+	 * <p>
+	 * It usually does, but not always: a config v1 cannot represent still gets its dependent fields
+	 * written. A STAR_OVERLAP tail truncates to NONE in the 3-bit mode field while the writer goes
+	 * on to emit the segment count and bends anyway, leaving bits in the stream that no reader will
+	 * ever look at. Re-encoding what was decoded produces a shorter, cleaner stream.
+	 * <p>
+	 * The TypeScript test suite uses this flag to decide where a byte-level comparison against
+	 * Java's own output is meaningful.
+	 */
+	private static boolean sameConfigBlock(Fixture f, EarsFeatures decoded, byte[] png) throws IOException {
+		WritableEarsImage original = Skins.decode(png);
+		WritableEarsImage second = Skins.decode(png);
+		if ("v0".equals(f.format)) {
+			OracleV0Writer.write(decoded, second);
+		} else {
+			EarsFeaturesWriterV1.write(decoded, second);
+		}
+		for (int y = 32; y < 36; y++) {
+			for (int x = 0; x < 4; x++) {
+				if (original.getARGB(x, y) != second.getARGB(x, y)) return false;
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -237,6 +281,17 @@ public class Fixtures {
 		m.put("emissiveSkinBytes", feat.emissiveSkin == null ? 0 : feat.emissiveSkin.size());
 		m.put("emissiveWingBytes", feat.emissiveWing == null ? 0 : feat.emissiveWing.size());
 		return m;
+	}
+
+	private static void dumpEntries(File dir, AlfalfaData data) throws IOException {
+		if (data.data.isEmpty()) return;
+		if (!dir.exists() && !dir.mkdirs()) {
+			throw new IOException("Could not create "+dir);
+		}
+		for (Map.Entry<String, Slice> en : data.data.entrySet()) {
+			// keys are ASCII and short; the predefined ones are all safe filenames
+			Files.write(new File(dir, en.getKey()+".bin").toPath(), en.getValue().toByteArray());
+		}
 	}
 
 	private static Map<String, Object> alfalfa(AlfalfaData data) {

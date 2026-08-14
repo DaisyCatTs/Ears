@@ -270,6 +270,16 @@ tasks.register('fixtures', JavaExec) {
 	args file('../tests/fixtures').absolutePath
 }
 
+// The other half of the compatibility check: decode skins written by the TypeScript encoder and
+// record what Java made of them, for the web test suite to compare against.
+tasks.register('decodeTsFixtures', JavaExec) {
+	group = 'verification'
+	description = 'Decode the TypeScript-encoded fixtures in tests/fixtures-ts with the Java implementation'
+	classpath = sourceSets.oracle.runtimeClasspath
+	mainClass = 'com.unascribed.ears.oracle.DecodeTsFixtures'
+	args file('../tests/fixtures-ts').absolutePath
+}
+
 // Replaces replace-version.sh, which can't run on Windows. Rewrites the marker in place, and only
 // when it actually changes, so it doesn't dirty compileJava on every build.
 tasks.register('stampVersion') {
