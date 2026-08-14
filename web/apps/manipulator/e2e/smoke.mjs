@@ -25,9 +25,20 @@ mkdirSync(outDir, { recursive: true });
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 
+// Cloudflare injects its Web Analytics beacon into the deployed site. It is not ours, and this
+// sandbox cannot resolve the host, so ignore that one failure rather than let it mask real errors.
+const IGNORED_HOSTS = ['static.cloudflareinsights.com'];
+
 const errors = [];
+const ignorable = (text) => IGNORED_HOSTS.some((h) => text.includes(h));
+page.on('requestfailed', (req) => {
+	if (!ignorable(req.url())) errors.push(`request failed: ${req.url()} (${req.failure()?.errorText})`);
+});
 page.on('console', (msg) => {
-	if (msg.type() === 'error') errors.push(msg.text());
+	// a bare "Failed to load resource" carries no URL; requestfailed above reports those properly
+	if (msg.type() === 'error' && !msg.text().startsWith('Failed to load resource')) {
+		errors.push(msg.text());
+	}
 });
 page.on('pageerror', (err) => errors.push(String(err)));
 

@@ -93,6 +93,21 @@ Two decisions worth knowing:
 - **Export refuses to hand over a skin that doesn't survive its own round trip.** `exportSkin`
   encodes, decodes, compares, and reports rather than downloading if they disagree.
 
+### Deploying
+
+```bash
+bun run deploy:dry   # build + validate
+bun run deploy       # build + publish to skin.daisy.cat
+```
+
+Static assets on Cloudflare Workers, with no Worker script — there is nothing to run on a server.
+The page says skins stay in your browser, and that is literally true: no upload endpoint exists.
+
+One caveat to that claim: Cloudflare injects its Web Analytics beacon
+(`static.cloudflareinsights.com`) into the deployed page automatically. It does not see skins, but
+it is a third-party script on a page that advertises privacy — turn it off in the Cloudflare
+dashboard (Web Analytics / Browser Insights for the zone) if that bothers you.
+
 Not yet ported from the old manipulator: wing and cape texture upload, the sample skin, loading a
 skin by username, the compatibility-notice table, and copy-to-clipboard. `manipulator/` at the repo
 root stays until those land.
