@@ -114,7 +114,10 @@ function drawEar(img: SkinImage, x: number, y: number, outer: number, inner: num
 			if (((img.getARGB(px, py) >>> 24) & 0xff) !== 0) continue;
 			// inner ear from the second row down, inset by one pixel on each side
 			const isInner = row >= 1 && dx > from && dx < to - 1 && row < rows.length - 1;
-			img.setARGB(px, py, isInner ? inner : outer);
+			let colour = isInner ? inner : outer;
+			// a little tonal variation, so the fur is not one flat colour
+			if (!isInner && (dx + row) % 5 === 0) colour = adjust(colour, 0.9);
+			img.setARGB(px, py, colour);
 		}
 	});
 }
@@ -166,10 +169,19 @@ export function autoTexture(source: SkinImage, features: PartialFeatures): AutoT
 				drawEar(img, r.x, r.y + 8, hair, hair);
 				break;
 			case 'tail':
-				// slightly narrower at the tip, which is where the last segment is drawn
+				// tapered toward the tip, with a lighter underside and a few darker strands so it
+				// reads as fur rather than a flat card
 				for (let y = 0; y < r.h; y++) {
 					const inset = y >= r.h - 3 ? 1 : 0;
-					fillIfEmpty(img, { x: r.x + inset, y: r.y + y, w: r.w - inset * 2, h: 1 }, y >= r.h - 3 ? adjust(hair, 1.15) : hair);
+					const base = y >= r.h - 4 ? adjust(hair, 1.18) : hair;
+					fillIfEmpty(img, { x: r.x + inset, y: r.y + y, w: r.w - inset * 2, h: 1 }, base);
+					for (let x = inset; x < r.w - inset; x++) {
+						if ((x * 3 + y * 5) % 7 === 0) {
+							const px = r.x + x;
+							const py = r.y + y;
+							if (img.getARGB(px, py) === base) img.setARGB(px, py, adjust(base, 0.88));
+						}
+					}
 				}
 				break;
 			case 'horn':
@@ -180,10 +192,25 @@ export function autoTexture(source: SkinImage, features: PartialFeatures): AutoT
 				// a slightly darker nose across the top of the muzzle
 				fillIfEmpty(img, { x: r.x + 2, y: r.y + 2, w: 4, h: 2 }, adjust(face, 0.7));
 				break;
-			default:
-				// claws: a pale tip, lighter than the skin
-				fillIfEmpty(img, r, adjust(face, 1.35));
+			default: {
+				// Claws, not a 4x4 block — a solid square reads as a chunk taken out of the hand.
+				// Three tapered points along the bottom edge, transparent everywhere else.
+				const claw = adjust(face, 1.45);
+				const shadow = adjust(face, 1.15);
+				for (const cx of [0, 2]) {
+					for (let y = 1; y < 4; y++) {
+						for (let x = 0; x < 2; x++) {
+							if (y === 1 && x === 1) continue; // taper the tip
+							const px = r.x + cx + x;
+							const py = r.y + y;
+							if (((img.getARGB(px, py) >>> 24) & 0xff) === 0) {
+								img.setARGB(px, py, y === 3 ? shadow : claw);
+							}
+						}
+					}
+				}
 				break;
+			}
 		}
 	}
 

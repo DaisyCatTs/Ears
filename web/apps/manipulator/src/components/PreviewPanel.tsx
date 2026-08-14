@@ -1,5 +1,6 @@
+import { CaptureDelegate, render } from '@ears/renderer';
 import { Preview } from '@ears/three';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { Derived } from '../lib/derive.js';
 
@@ -14,6 +15,8 @@ export function PreviewPanel({
 }) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const previewRef = useRef<Preview | null>(null);
+	const [animate, setAnimate] = useState(true);
+	const [walking, setWalking] = useState(false);
 
 	useEffect(() => {
 		if (!canvasRef.current) return;
@@ -38,7 +41,7 @@ export function PreviewPanel({
 		};
 	}, []);
 
-	// textures and meshes are rebuilt together, only when the derived skin actually changes
+	// textures are uploaded only when the skin itself changes
 	useEffect(() => {
 		const preview = previewRef.current;
 		if (!preview || !derived) return;
@@ -52,6 +55,25 @@ export function PreviewPanel({
 		preview.rebuild(derived.objects, { slim, overlays });
 		preview.resize();
 	}, [derived, slim, overlays]);
+
+	// The renderer sways tails and flaps wings off a clock, so a preview stuck at time zero shows a
+	// frozen pose. Re-run it a few times a second and rebuild — the geometry is small enough that
+	// this is cheaper than it sounds, and it is the difference between a mannequin and a character.
+	useEffect(() => {
+		const preview = previewRef.current;
+		if (!preview || !derived?.features || !animate) return;
+		let frame = 0;
+		const id = setInterval(() => {
+			frame += 1;
+			const time = frame * 1.5;
+			// a gentle walk cycle when asked, so wings beat and the tail swings
+			const swing = walking ? Math.sin(time / 4) * 0.6 : 0;
+			const capture = new CaptureDelegate(slim, false, time, swing);
+			render(derived.features, capture);
+			preview.rebuild(capture.objects, { slim, overlays });
+		}, 66);
+		return () => clearInterval(id);
+	}, [derived, slim, overlays, animate, walking]);
 
 	return (
 		<div className="relative h-full w-full">
@@ -78,6 +100,23 @@ export function PreviewPanel({
 					<p className="mt-1">or paste one, or use Import</p>
 				</div>
 			) : null}
+			<div className="absolute right-2 top-2 flex gap-1">
+				<button
+					type="button"
+					className={`rounded border px-2 py-0.5 backdrop-blur transition ${animate ? 'border-accent bg-accent/20' : 'border-edge bg-panel/80 hover:bg-edge'}`}
+					onClick={() => setAnimate((v) => !v)}
+				>
+					Animate
+				</button>
+				<button
+					type="button"
+					className={`rounded border px-2 py-0.5 backdrop-blur transition ${walking ? 'border-accent bg-accent/20' : 'border-edge bg-panel/80 hover:bg-edge'}`}
+					onClick={() => setWalking((v) => !v)}
+					title="swing the limbs, as if walking"
+				>
+					Walk
+				</button>
+			</div>
 			<p className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 text-[11px] text-muted">
 				drag to orbit · scroll to zoom
 			</p>

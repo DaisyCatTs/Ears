@@ -13,6 +13,8 @@ import { decodeEntryToImageData, toImageData } from './skin.js';
  */
 export interface Derived {
 	objects: RenderObject[];
+	/** What the parser made of the skin, so the preview can re-render it as the clock moves. */
+	features: ReturnType<typeof detect> | null;
 	skin: ImageData;
 	wing: ImageData | null;
 	cape: ImageData | null;
@@ -57,6 +59,7 @@ export function derive(
 
 	return {
 		objects: capture.objects,
+		features: decoded.enabled ? decoded : null,
 		// `reread` has had its emissive pixels stripped by detect, which is what gets drawn
 		skin: toImageData(reread),
 		wing: decodeEntryToImageData(decoded.alfalfa.entries.get('wing')),

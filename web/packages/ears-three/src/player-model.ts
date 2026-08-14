@@ -21,10 +21,16 @@ function boxUVs(
 	const tw = 64;
 	const th = 64;
 
-	// [x, y, width, height] of each face in the skin, in Minecraft's unwrap order
+	// [x, y, width, height] of each face in the skin, indexed by BoxGeometry's face order:
+	// +X, -X, +Y, -Y, +Z, -Z.
+	//
+	// The model faces +Z, toward the default camera. A player facing you has their right hand on
+	// your left, and your left is -X — so the player's right side is -X, and the skin's *right*
+	// strip belongs on the -X face. Getting this backwards mirrors every part of the model, which
+	// is subtle enough on a symmetric skin to go unnoticed and obvious on an asymmetric one.
 	const faces: [number, number, number, number][] = [
-		[u, v + d, d, h], // right (+x)
-		[u + d + w, v + d, d, h], // left (-x)
+		[u + d + w, v + d, d, h], // the player's left side, on +X
+		[u, v + d, d, h], // the player's right side, on -X
 		[u + d, v, w, d], // top
 		[u + d + w, v, w, d], // bottom
 		[u + d, v + d, w, h], // front

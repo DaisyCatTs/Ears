@@ -53,8 +53,21 @@ export class CaptureDelegate extends DetachedEarsRenderDelegate {
 	constructor(
 		private readonly slim = false,
 		private readonly jacket = false,
+		/** Ticks. The renderer sways tails and flaps wings off this, so a fixed value renders a
+		 * frozen pose — which is why a static preview looks dead next to the game. */
+		private readonly time = 0,
+		/** How far through a walk cycle, 0 for standing still. */
+		private readonly limbSwing = 0,
 	) {
 		super();
+	}
+
+	override getTime(): number {
+		return this.time;
+	}
+
+	override getLimbSwing(): number {
+		return this.limbSwing;
 	}
 
 	override bind(src: TexSource): void {
