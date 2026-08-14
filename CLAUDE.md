@@ -111,6 +111,23 @@ empty. **If you change anything in the parsers, writers, `Alfalfa`, or `EarsRend
 the diff is the blast radius.** See `tests/README.md`, which also records three known asymmetries
 in the format that are documented rather than fixed.
 
+## web/
+
+A Bun workspace holding the TypeScript side. `packages/ears-protocol` is a DOM-free reimplementation
+of the skin data format, checked against the fixtures in both directions:
+
+```bash
+cd web && bun install
+bun run test          # Java encoded, we decode
+bun run test:reverse  # we encode, Java decodes (runs common's decodeTsFixtures task)
+```
+
+The reverse direction exists because an encoder verified only against its own decoder can be
+self-consistently wrong. It compares Java's decode against Java's own expectations, never against
+our decode of the same skin. `tests/fixtures-ts/` is generated and gitignored.
+
+Java remains the authority on the format; the TypeScript is the port.
+
 **Known gap**: `publish-curseforge` and `publish-modrinth` are still on Gradle 6.6.1 and cannot run
 on a modern JDK. They need modernizing (cursegradle 1.4.0 is the likely blocker) before any release.
 

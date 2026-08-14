@@ -1,0 +1,22 @@
+{
+	"name": "ears-web",
+	"private": true,
+	"type": "module",
+	"workspaces": [
+		"packages/*"
+	],
+	"scripts": {
+		"test": "vitest run packages/ears-protocol/test/fixtures.test.ts",
+		"test:watch": "vitest",
+		"test:reverse": "bun run fixtures:emit && bun run fixtures:decode && vitest run packages/ears-protocol/test/reverse.test.ts",
+		"test:all": "bun run test && bun run test:reverse",
+		"fixtures:emit": "bun run packages/ears-protocol/scripts/emit-fixtures.ts",
+		"fixtures:decode": "node scripts/decode-with-java.mjs",
+		"typecheck": "tsc --noEmit"
+	},
+	"devDependencies": {
+		"@types/node": "^22.10.2",
+		"typescript": "^5.7.2",
+		"vitest": "^2.1.8"
+	}
+}

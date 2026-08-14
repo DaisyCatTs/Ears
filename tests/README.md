@@ -60,11 +60,36 @@ decoded), and 3 are `known-unstable` — genuine asymmetries in the upstream for
 
 These are documented, not fixed: changing them would change what existing skins mean.
 
+`index.json` also records `reencodeBytes`: whether re-encoding reproduces the original config block
+*byte for byte*, which is stricter than reproducing the same features. `tail-star-overlap` is the
+interesting `differs` case — v1 truncates the mode to `NONE` in the 3-bit field but then writes the
+segment count and bends anyway, leaving bits in the stream that no reader ever looks at.
+
 ## Using them from TypeScript
 
-Both directions have to be checked, or the encoder and decoder can agree with each other and both be
-wrong:
+Both directions are checked, because an encoder and decoder that share a bug agree with each other
+perfectly:
 
-1. **Forward** — decode each `skin.png` and compare against `decoded.json` and `alfalfa.json`.
-2. **Reverse** — encode from a config, write the PNG, and have **Java** decode it, comparing against
-   the same expectations. An encoder verified only against its own decoder proves nothing.
+```bash
+cd web
+bun run test          # forward: Java encoded, we decode
+bun run test:reverse   # reverse: we encode, Java decodes
+bun run test:all
+```
+
+**Forward** decodes each `skin.png` and compares against `decoded.json`, the raw alfalfa payloads in
+`alfalfa-read/`, and the derived images (`alfalfa-after-detect/`, `emissive-*.png`). Raw payloads are
+compared byte for byte; derived PNGs are compared pixel-wise, since a different deflate legitimately
+produces different bytes for identical pixels.
+
+**Reverse** writes skins with the TypeScript encoder into `tests/fixtures-ts/` (generated, not
+checked in), has Java decode them via `./gradlew decodeTsFixtures`, and then checks:
+
+- for `roundtrip-*` cases, that Java reads back the *exact* features it decoded from its own fixture,
+  and that our config block and alpha channel match Java's bytes (where `reencodeBytes` is `stable`);
+- for hand-written cases, that Java sees the features we asked for, within the quantization the
+  format imposes.
+
+Note what the reverse direction deliberately does **not** do: compare Java's decode against our own
+decode of the same skin. Both would read the same wrong bits and agree — an early version of this
+suite did exactly that and a deliberately corrupted encoder passed it.

@@ -1,0 +1,14 @@
+{
+	"name": "@ears/protocol",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"main": "./src/index.ts",
+	"types": "./src/index.ts",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"dependencies": {
+		"fast-png": "^6.2.0"
+	}
+}

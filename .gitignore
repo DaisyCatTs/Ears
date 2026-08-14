@@ -3,3 +3,5 @@ artifacts
 build-ok
 /.java
 /gallery
+node_modules
+/tests/fixtures-ts
