@@ -110,6 +110,13 @@ empty. **If you change anything in the parsers, writers, `Alfalfa`, or `EarsRend
 the diff is the blast radius.** See `tests/README.md`, which also records three known asymmetries
 in the format that are documented rather than fixed.
 
+```bash
+cd common && ./gradlew testSkins   # 28 skins + a checklist, in tests/in-game/
+```
+
+That pack is the one thing not machine-verified: it exists to be looked at in a real copy of
+Minecraft. Every skin isolates one feature against a flat base so a misplaced quad is obvious.
+
 ## web/
 
 A Bun workspace holding the TypeScript side:

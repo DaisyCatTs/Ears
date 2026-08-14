@@ -145,6 +145,16 @@ tasks.register('decodeTsFixtures', JavaExec) {
 	args file('../tests/fixtures-ts').absolutePath
 }
 
+// Builds the pack of skins for testing in a real copy of Minecraft, with a checklist. Everything
+// else here is verified against the Java implementation; this is for the part that needs a person.
+tasks.register('testSkins', JavaExec) {
+	group = 'verification'
+	description = 'Generate tests/in-game skins and a checklist for testing in Minecraft'
+	classpath = sourceSets.oracle.runtimeClasspath
+	mainClass = 'com.unascribed.ears.oracle.TestSkins'
+	args file('../tests/in-game').absolutePath
+}
+
 // Rewrites the version marker in place, and only when it changes, so it doesn't dirty compileJava
 // on every build. Replaces replace-version.sh, which could not run on Windows.
 tasks.register('stampVersion') {
