@@ -137,8 +137,16 @@ our decode of the same skin. `tests/fixtures-ts/` is generated and gitignored.
 
 Java remains the authority on the format; the TypeScript is the port.
 
+## CI
+
+`.github/workflows/ci.yml` runs on push to `trunk` and on PRs: builds each port (matrix), checks
+`tests/fixtures` still regenerates identically, typechecks and runs both directions of the golden
+tests, builds the editor, and drives it in Chromium. `release.yml` builds the four jars on a `v*`
+tag and attaches them to a GitHub release.
+
 **Known gap**: `publish-curseforge` and `publish-modrinth` are still on Gradle 6.6.1 and cannot run
-on a modern JDK. They need modernizing (cursegradle 1.4.0 is the likely blocker) before any release.
+on a modern JDK, so CurseForge/Modrinth publishing is *not* automated — the release workflow stops
+at GitHub. Modernizing them (cursegradle 1.4.0 is the likely blocker) is what unblocks that.
 
 ## Versioning and release
 

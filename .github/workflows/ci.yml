@@ -1,0 +1,146 @@
+name: CI
+
+on:
+  push:
+    branches: [trunk]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mod:
+    name: Mod (${{ matrix.port }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        port:
+          - platform-fabric-1.21.11
+          - platform-fabric-26.1
+          - platform-neoforge-1.21.11
+          - platform-neoforge-26.1
+    steps:
+      - uses: actions/checkout@v4
+
+      # 21 runs Gradle and builds the 1.21.11 ports; 25 is the toolchain the 26.1 ports ask for.
+      # Installing it here means the foojay resolver never has to download one.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: |
+            25
+            21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # every directory is its own Gradle build, and the ports consume common's jars by filename
+      - name: Build common
+        run: ./gradlew build
+        working-directory: common
+
+      - name: Build ${{ matrix.port }}
+        run: ./gradlew build
+        working-directory: ${{ matrix.port }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.port }}
+          path: ${{ matrix.port }}/build/libs/*.jar
+          if-no-files-found: error
+
+  fixtures:
+    name: Protocol fixtures are reproducible
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Regenerate fixtures
+        run: ./gradlew fixtures
+        working-directory: common
+
+      # the fixtures are checked in; a diff here means the format changed, which is a decision
+      # someone has to make deliberately rather than discover in a release
+      - name: Check for drift
+        run: |
+          if ! git diff --exit-code --stat -- tests/fixtures; then
+            echo "::error::tests/fixtures changed. If that was intended, commit the regenerated fixtures."
+            exit 1
+          fi
+
+  web:
+    name: Web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+
+      - run: bun install --frozen-lockfile
+        working-directory: web
+
+      - name: Typecheck
+        run: bun run typecheck
+        working-directory: web
+
+      - name: Golden tests (Java encoded, we decode)
+        run: bun run test
+        working-directory: web
+
+      # the direction that actually proves the encoder: we write skins, Java reads them back
+      - name: Golden tests (we encode, Java decodes)
+        run: bun run test:reverse
+        working-directory: web
+
+      - name: Build the editor
+        run: bun run build:app
+        working-directory: web
+
+  e2e:
+    name: Editor smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+
+      - run: bun install --frozen-lockfile
+        working-directory: web
+
+      - run: bunx playwright install --with-deps chromium
+        working-directory: web
+
+      - name: Start the editor
+        run: |
+          bun run dev &
+          for i in $(seq 1 60); do
+            if curl -sf -o /dev/null http://localhost:5273/; then
+              echo "dev server up after ${i}s"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::dev server never came up"
+          exit 1
+        working-directory: web
+
+      - name: Import, edit, export
+        run: bun run test:e2e
+        working-directory: web
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: editor-screenshots
+          path: web/apps/manipulator/e2e/screenshots
+          if-no-files-found: ignore

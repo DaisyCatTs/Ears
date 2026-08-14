@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag to build (defaults to the current ref)
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build and attach jars
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: |
+            25
+            21
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build every supported port
+        run: ./build.sh
+
+      - name: Check the jars are all there
+        run: |
+          for jar in ears-fabric-1.21.11 ears-fabric-26.1 ears-neoforge-1.21.11 ears-neoforge-26.1; do
+            ls artifacts/$jar-*.jar >/dev/null || { echo "::error::missing $jar"; exit 1; }
+          done
+          ls -la artifacts/
+
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: artifacts/*.jar
+          generate_release_notes: true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jars
+          path: artifacts/*.jar
+          if-no-files-found: error
+
+# Note: this deliberately stops at GitHub releases. Publishing to CurseForge and Modrinth still runs
+# through publish-curseforge/ and publish-modrinth/, which are on Gradle 6.6.1 and cannot start on a
+# modern JDK — see the known gap in CLAUDE.md. Those need modernizing before the publish step can be
+# automated here.

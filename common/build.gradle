@@ -168,17 +168,10 @@ tasks.named('compileJava') { dependsOn 'stampVersion' }
 
 publishing {
 	repositories {
+		// Local only. Upstream publishes ears-api to its own Maven; this fork has no business
+		// pushing artifacts there, so that repository is deliberately not configured here.
 		maven {
 			url = uri(layout.buildDirectory.dir('maven'))
-		}
-		if (project.hasProperty("publish-username")) {
-			maven {
-				url = uri("https://repo-api.sleeping.town/")
-				credentials {
-					username project.getProperty("publish-username")
-					password project.getProperty("publish-password")
-				}
-			}
 		}
 	}
 	publications {
