@@ -9,3 +9,4 @@ node_modules
 /web/apps/*/e2e/screenshots
 /web/**/.wrangler
 /release
+/publish-*/build
