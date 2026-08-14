@@ -1,0 +1,36 @@
+@import 'tailwindcss';
+
+@theme {
+	--color-surface: oklch(0.17 0.012 275);
+	--color-panel: oklch(0.21 0.014 275);
+	--color-edge: oklch(0.29 0.016 275);
+	--color-ink: oklch(0.93 0.006 275);
+	--color-muted: oklch(0.68 0.014 275);
+	--color-accent: oklch(0.74 0.15 60);
+}
+
+html,
+body,
+#root {
+	height: 100%;
+}
+
+body {
+	margin: 0;
+	background: var(--color-surface);
+	color: var(--color-ink);
+	font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+	font-size: 13px;
+	-webkit-font-smoothing: antialiased;
+}
+
+/* the skin is pixel art; never let the browser smooth it */
+canvas.pixelated,
+img.pixelated {
+	image-rendering: pixelated;
+}
+
+:focus-visible {
+	outline: 2px solid var(--color-accent);
+	outline-offset: 2px;
+}

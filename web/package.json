@@ -3,7 +3,8 @@
 	"private": true,
 	"type": "module",
 	"workspaces": [
-		"packages/*"
+		"packages/*",
+		"apps/*"
 	],
 	"scripts": {
 		"test": "vitest run packages/ears-protocol/test/fixtures.test.ts packages/ears-renderer",
@@ -12,11 +13,27 @@
 		"test:all": "bun run test && bun run test:reverse",
 		"fixtures:emit": "bun run packages/ears-protocol/scripts/emit-fixtures.ts",
 		"fixtures:decode": "node scripts/decode-with-java.mjs",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit",
+		"dev": "vite --config apps/manipulator/vite.config.ts",
+		"build:app": "vite build --config apps/manipulator/vite.config.ts",
+		"test:e2e": "node apps/manipulator/e2e/smoke.mjs"
 	},
 	"devDependencies": {
+		"@tailwindcss/vite": "^4.3.3",
 		"@types/node": "^22.10.2",
+		"@types/react": "^19.2.18",
+		"@types/react-dom": "^19.2.4",
+		"@types/three": "^0.185.4",
+		"@vitejs/plugin-react": "^6.0.5",
+		"playwright": "^1.62.1",
+		"tailwindcss": "^4.3.3",
 		"typescript": "^5.7.2",
+		"vite": "^8.2.1",
 		"vitest": "^2.1.8"
+	},
+	"dependencies": {
+		"react": "^19.2.8",
+		"react-dom": "^19.2.8",
+		"three": "^0.185.1"
 	}
 }

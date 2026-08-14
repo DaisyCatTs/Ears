@@ -14,9 +14,6 @@ import { FIXTURES_DIR, loadFixtureIndex, type FixtureEntry } from './helpers.js'
 
 const index = loadFixtureIndex();
 
-/** Java writes floats with six decimals; compare numerically rather than by formatting. */
-const EPSILON = 1e-6;
-
 function expectFeaturesMatch(actual: EarsFeatures, expected: Record<string, unknown>, name: string) {
 	const scalar: (keyof EarsFeatures)[] = [
 		'enabled',

@@ -114,13 +114,21 @@ in the format that are documented rather than fixed.
 
 ## web/
 
-A Bun workspace holding the TypeScript side. `packages/ears-protocol` is a DOM-free reimplementation
-of the skin data format, checked against the fixtures in both directions:
+A Bun workspace holding the TypeScript side:
+
+| Package | What |
+|---|---|
+| `packages/ears-protocol` | the skin data format, DOM-free; checked against the fixtures both ways |
+| `packages/ears-renderer` | a literal port of `EarsRenderer`; its display list is diffed against Java's quad-for-quad |
+| `packages/ears-three` | display list → three.js meshes. **No golden data** — verified by looking at it |
+| `apps/manipulator` | the editor (Vite + React, client-only) |
 
 ```bash
 cd web && bun install
-bun run test          # Java encoded, we decode
+bun run dev           # editor at :5273
+bun run test          # protocol (forward) + renderer display list
 bun run test:reverse  # we encode, Java decodes (runs common's decodeTsFixtures task)
+bun run test:e2e      # browser smoke test; needs `bun run dev` running
 ```
 
 The reverse direction exists because an encoder verified only against its own decoder can be

@@ -64,7 +64,7 @@ function serializeFeatures(f: ReturnType<typeof detect>): Record<string, unknown
 interface Case {
 	name: string;
 	features: PartialFeatures;
-	alfalfa?: AlfalfaData;
+	alfalfa?: AlfalfaData | undefined;
 	format?: 'auto' | 'v1' | 'v0';
 	/**
 	 * The Java fixture these features came from. When set, Java decoding our skin must reproduce

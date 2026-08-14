@@ -1,14 +1,29 @@
 # Ears web
 
-The browser side of Ears: the skin data format in TypeScript, and (later) the manipulator built on
-top of it.
+The browser side of Ears: the skin data format in TypeScript, the renderer, and the manipulator
+built on top of them.
 
 ```bash
 bun install
-bun run test        # forward golden tests (Java encoded, we decode)
+bun run dev          # the editor, at http://localhost:5273
+bun run test         # golden tests: protocol (forward) + renderer display list
 bun run test:reverse # reverse golden tests (we encode, Java decodes) — needs a JDK
+bun run test:e2e     # browser smoke test, needs `bun run dev` in another terminal
 bun run typecheck
 ```
+
+## A note on the stack
+
+The brief asked for TanStack Start. This is Vite + React instead, deliberately: the editor is
+entirely client-side — no server functions, no data loading, nothing to render on a server — and
+SSR would only add a hydration boundary for code that needs `window`, `File` and WebGL on the first
+paint. Start becomes worth it the day there are docs pages worth pre-rendering or a shared gallery;
+moving then is a routing change, not a rewrite. TanStack Router isn't in here yet either, for the
+same reason: there is one view.
+
+shadcn/ui is likewise not installed. The editor needs five controls, all of them wanting the same
+dense tool-like proportions, so `components/ui.tsx` defines them directly rather than pulling in a
+component library and restyling it.
 
 ## packages/ears-protocol
 
@@ -55,3 +70,29 @@ places, because Java does this arithmetic in 32-bit float and we do it in double
 would be testing IEEE rounding rather than geometry.
 
 Feature geometry belongs in `common`, not here. If the two disagree, this one is wrong.
+
+## packages/ears-three
+
+Turns the display list into three.js meshes, plus the vanilla player model it hangs off. The
+transform semantics (Z flip, negated Y translations, `(-x, y, -z)` rotation axes) come from the old
+manipulator, because Minecraft's space is left-handed relative to three's.
+
+**This layer has no golden data behind it.** The display list is verified; how it's turned into
+meshes is checked by looking at it. If the preview looks wrong but `bun run test` passes, start here.
+
+## apps/manipulator
+
+The editor: config panel, 3D preview, inspector.
+
+Two decisions worth knowing:
+
+- **The preview renders what the parser sees, not what the UI thinks.** Every change is written into
+  a skin and read straight back before rendering (`lib/derive.ts`). That costs about a millisecond
+  and buys exactness — a wing mode with no texture disappears in the preview exactly as it will
+  in-game, rather than showing something the game won't agree with.
+- **Export refuses to hand over a skin that doesn't survive its own round trip.** `exportSkin`
+  encodes, decodes, compares, and reports rather than downloading if they disagree.
+
+Not yet ported from the old manipulator: wing and cape texture upload, the sample skin, loading a
+skin by username, the compatibility-notice table, and copy-to-clipboard. `manipulator/` at the repo
+root stays until those land.

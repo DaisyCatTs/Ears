@@ -5,3 +5,5 @@ build-ok
 /gallery
 node_modules
 /tests/fixtures-ts
+/web/apps/*/dist
+/web/apps/*/e2e/screenshots
