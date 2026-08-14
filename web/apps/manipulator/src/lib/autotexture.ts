@@ -99,6 +99,26 @@ function toPink(argb: number): number {
 	return ((0xff000000 | (r << 16) | (g << 8) | b) >>> 0);
 }
 
+/**
+ * An 8x8 ear: pointed at the top, widening toward the head, with a lighter inner ear.
+ * Rows are given as [from, to] spans so the shape is legible as a shape.
+ */
+function drawEar(img: SkinImage, x: number, y: number, outer: number, inner: number): void {
+	const rows: [number, number][] = [
+		[3, 5], [2, 6], [2, 6], [1, 7], [1, 7], [0, 8], [0, 8], [0, 8],
+	];
+	rows.forEach(([from, to], row) => {
+		for (let dx = from; dx < to; dx++) {
+			const px = x + dx;
+			const py = y + row;
+			if (((img.getARGB(px, py) >>> 24) & 0xff) !== 0) continue;
+			// inner ear from the second row down, inset by one pixel on each side
+			const isInner = row >= 1 && dx > from && dx < to - 1 && row < rows.length - 1;
+			img.setARGB(px, py, isInner ? inner : outer);
+		}
+	});
+}
+
 function fillIfEmpty(img: SkinImage, r: Region, colour: number): void {
 	for (let y = 0; y < r.h; y++) {
 		for (let x = 0; x < r.w; x++) {
@@ -134,25 +154,23 @@ export function autoTexture(source: SkinImage, features: PartialFeatures): AutoT
 		const r = FEATURE_REGIONS[name];
 		switch (name) {
 			case 'ears': {
-				// outer ear in hair colour, with a pink inner ear on each side
-				fillIfEmpty(img, r, hair);
-				const inner = toPink(hair);
-				for (const ox of [2, 10]) {
-					for (let y = 2; y < r.h - 1; y++) {
-						for (let x = 0; x < 4; x++) {
-							const px = r.x + ox + x;
-							const py = r.y + y;
-							if (((img.getARGB(px, py) >>> 24) & 0xff) === 0 || img.getARGB(px, py) === hair) {
-								img.setARGB(px, py, inner);
-							}
-						}
-					}
-				}
+				// The region is one 16x8 strip covering both ears, so draw two tapered ears with a
+				// gap between them rather than filling it — a solid block reads as a hat brim.
+				drawEar(img, r.x, r.y, hair, toPink(hair));
+				drawEar(img, r.x + 8, r.y, hair, toPink(hair));
 				break;
 			}
 			case 'earsBack':
+				// the backs match the fronts, so the silhouette agrees from either side
+				drawEar(img, r.x, r.y, hair, hair);
+				drawEar(img, r.x, r.y + 8, hair, hair);
+				break;
 			case 'tail':
-				fillIfEmpty(img, r, hair);
+				// slightly narrower at the tip, which is where the last segment is drawn
+				for (let y = 0; y < r.h; y++) {
+					const inset = y >= r.h - 3 ? 1 : 0;
+					fillIfEmpty(img, { x: r.x + inset, y: r.y + y, w: r.w - inset * 2, h: 1 }, y >= r.h - 3 ? adjust(hair, 1.15) : hair);
+				}
 				break;
 			case 'horn':
 				fillIfEmpty(img, r, adjust(face, 0.8));
