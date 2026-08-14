@@ -4,3 +4,8 @@ gradlew.bat linguist-vendored
 *.jar binary
 *.gradle linguist-detectable
 *.json linguist-detectable
+
+# Golden protocol fixtures are compared byte for byte against regenerated output, so they must
+# never go through EOL conversion — otherwise every JSON file shows as modified on Windows.
+tests/fixtures/** -text
+tests/fixtures/**/*.png binary
