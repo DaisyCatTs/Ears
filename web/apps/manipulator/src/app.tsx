@@ -6,6 +6,7 @@ import { Button } from './components/ui.js';
 import { derive } from './lib/derive.js';
 import { detectSlim } from './lib/profile.js';
 import { buildSample } from './lib/sample.js';
+import { autoTexture, describeRegions, missingRegions } from './lib/autotexture.js';
 import { applyPreset, type Preset } from './lib/presets.js';
 import { sampleWing } from './lib/sample.js';
 import { decodeSkin, download, exportSkin } from './lib/skin.js';
@@ -143,13 +144,26 @@ export function App() {
 
 	const onPreset = useCallback(
 		(preset: Preset) => {
-			actions.patch(applyPreset(preset, state.features));
+			const next = applyPreset(preset, state.features);
+			actions.patch(next);
 			// a winged preset with no wing texture would silently render nothing, so give it one
 			if (preset.needsWing && !state.alfalfa.entries.has('wing')) {
 				actions.setAlfalfa(withEntry(state.alfalfa, 'wing', sampleWing()));
 			}
+			// Ears reads each feature's texture from a corner of the skin that ordinary skins leave
+			// empty. Fill what this preset needs, in the wearer's own colours, or it renders nothing.
+			if (state.original) {
+				const missing = missingRegions(state.original, next);
+				if (missing.length > 0) {
+					const { image } = autoTexture(state.original, next);
+					actions.setSkin(image, image);
+					setTextureNotice(
+						`Drew ${describeRegions(missing)} into the skin, using its own colours — those parts of the texture were empty. Undo puts it back.`,
+					);
+				}
+			}
 		},
-		[actions, state.features, state.alfalfa],
+		[actions, state.features, state.alfalfa, state.original],
 	);
 
 	const onCopy = async () => {

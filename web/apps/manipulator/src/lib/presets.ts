@@ -36,7 +36,7 @@ export const PRESETS: Preset[] = [
 			snoutWidth: 3,
 			snoutHeight: 2,
 			snoutDepth: 2,
-			snoutOffset: 3,
+			snoutOffset: 1,
 		},
 	},
 	{
@@ -55,7 +55,7 @@ export const PRESETS: Preset[] = [
 			snoutWidth: 2,
 			snoutHeight: 1,
 			snoutDepth: 1,
-			snoutOffset: 3,
+			snoutOffset: 1,
 		},
 	},
 	{
@@ -74,7 +74,7 @@ export const PRESETS: Preset[] = [
 			snoutWidth: 3,
 			snoutHeight: 2,
 			snoutDepth: 4,
-			snoutOffset: 3,
+			snoutOffset: 1,
 		},
 	},
 	{
@@ -92,7 +92,7 @@ export const PRESETS: Preset[] = [
 			snoutWidth: 2,
 			snoutHeight: 1,
 			snoutDepth: 1,
-			snoutOffset: 3,
+			snoutOffset: 1,
 		},
 	},
 	{
@@ -111,7 +111,7 @@ export const PRESETS: Preset[] = [
 			snoutWidth: 4,
 			snoutHeight: 2,
 			snoutDepth: 4,
-			snoutOffset: 3,
+			snoutOffset: 1,
 		},
 	},
 	{
@@ -127,7 +127,7 @@ export const PRESETS: Preset[] = [
 			snoutWidth: 3,
 			snoutHeight: 2,
 			snoutDepth: 3,
-			snoutOffset: 3,
+			snoutOffset: 1,
 		},
 	},
 	{
@@ -196,7 +196,7 @@ export const PRESETS: Preset[] = [
 			snoutWidth: 5,
 			snoutHeight: 3,
 			snoutDepth: 3,
-			snoutOffset: 3,
+			snoutOffset: 1,
 		},
 	},
 ];

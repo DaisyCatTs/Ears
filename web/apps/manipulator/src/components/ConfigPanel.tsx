@@ -147,7 +147,7 @@ export function ConfigPanel({
 						onChange={(snoutDepth) => onPatch({ snoutDepth })}
 					/>
 				</Field>
-				<Field label="Offset">
+				<Field label="Offset" hint="higher number sits higher on the face">
 					<Slider
 						value={features.snoutOffset}
 						min={0}

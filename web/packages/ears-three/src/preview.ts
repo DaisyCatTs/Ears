@@ -32,6 +32,9 @@ function toTexture(data: ImageData | null | undefined): THREE.Texture | null {
 		data.height,
 		THREE.RGBAFormat,
 	);
+	// Skins are authored in sRGB. Without saying so, three treats the values as linear and every
+	// colour comes out washed out — the single most visible rendering bug this preview had.
+	tex.colorSpace = THREE.SRGBColorSpace;
 	// pixel art: never interpolate, and never wrap
 	tex.magFilter = THREE.NearestFilter;
 	tex.minFilter = THREE.NearestFilter;
@@ -63,11 +66,13 @@ export class Preview {
 		this.camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
 		this.scene.add(this.root);
 
-		this.scene.add(new THREE.AmbientLight(0xffffff, 1.9));
-		const key = new THREE.DirectionalLight(0xffffff, 1.5);
+		// Ambient close to 1 so a lit face shows very nearly the skin's own colour, with two soft
+		// directionals only to separate the sides. Any more and the pixels stop being the artist's.
+		this.scene.add(new THREE.AmbientLight(0xffffff, 0.85));
+		const key = new THREE.DirectionalLight(0xffffff, 0.32);
 		key.position.set(0.3, 1, -0.9).normalize();
 		this.scene.add(key);
-		const fill = new THREE.DirectionalLight(0xffffff, 1.5);
+		const fill = new THREE.DirectionalLight(0xffffff, 0.32);
 		fill.position.set(-0.3, 1, 0.9).normalize();
 		this.scene.add(fill);
 
@@ -89,8 +94,9 @@ export class Preview {
 		});
 		el.addEventListener('pointermove', (e) => {
 			if (!this.dragging) return;
-			this.yaw = (this.yaw + e.movementX) % 360;
-			this.pitch = Math.max(-89, Math.min(89, this.pitch + e.movementY));
+			// subtract, so the model follows the cursor rather than running away from it
+			this.yaw = (this.yaw - e.movementX) % 360;
+			this.pitch = Math.max(-89, Math.min(89, this.pitch - e.movementY));
 		});
 		el.addEventListener(
 			'wheel',

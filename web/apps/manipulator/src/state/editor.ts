@@ -27,6 +27,8 @@ export interface EditorState {
 interface Snapshot {
 	features: PartialFeatures;
 	alfalfa: AlfalfaData;
+	image: SkinImage | null;
+	original: SkinImage | null;
 }
 
 export const EMPTY_FEATURES: PartialFeatures = {
@@ -69,6 +71,7 @@ type Action =
 	| { type: 'load'; skin: LoadedSkin }
 	| { type: 'patch'; patch: Partial<PartialFeatures> }
 	| { type: 'setAlfalfa'; alfalfa: AlfalfaData }
+	| { type: 'setSkin'; image: SkinImage; original: SkinImage }
 	| { type: 'setSlim'; slim: boolean }
 	| { type: 'toggleOverlay'; part: string }
 	| { type: 'resetEars' }
@@ -76,7 +79,14 @@ type Action =
 	| { type: 'redo' };
 
 function snapshot(state: EditorState): Snapshot {
-	return { features: state.features, alfalfa: state.alfalfa };
+	// images are treated as immutable — auto-texturing returns a new one rather than editing in
+	// place, so an undo can simply put the previous reference back
+	return {
+		features: state.features,
+		alfalfa: state.alfalfa,
+		image: state.image,
+		original: state.original,
+	};
 }
 
 function reducer(state: EditorState, action: Action): EditorState {
@@ -112,6 +122,14 @@ function reducer(state: EditorState, action: Action): EditorState {
 			return {
 				...state,
 				alfalfa: action.alfalfa,
+				past: [...state.past, snapshot(state)].slice(-100),
+				future: [],
+			};
+		case 'setSkin':
+			return {
+				...state,
+				image: action.image,
+				original: action.original,
 				past: [...state.past, snapshot(state)].slice(-100),
 				future: [],
 			};
@@ -161,6 +179,8 @@ export function useEditor() {
 			load: (skin: LoadedSkin) => dispatch({ type: 'load', skin }),
 			patch: (patch: Partial<PartialFeatures>) => dispatch({ type: 'patch', patch }),
 			setAlfalfa: (alfalfa: AlfalfaData) => dispatch({ type: 'setAlfalfa', alfalfa }),
+			setSkin: (image: SkinImage, original: SkinImage) =>
+				dispatch({ type: 'setSkin', image, original }),
 			setSlim: (slim: boolean) => dispatch({ type: 'setSlim', slim }),
 			toggleOverlay: (part: string) => dispatch({ type: 'toggleOverlay', part }),
 			resetEars: () => dispatch({ type: 'resetEars' }),

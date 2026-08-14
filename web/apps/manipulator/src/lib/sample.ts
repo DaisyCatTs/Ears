@@ -166,7 +166,7 @@ export function buildSample(): Sample {
 		tailBend1: 25,
 		tailBend2: 15,
 		tailBend3: 0,
-		snoutOffset: 3,
+		snoutOffset: 1,
 		snoutWidth: 3,
 		snoutHeight: 2,
 		snoutDepth: 2,
