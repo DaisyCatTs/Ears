@@ -1,0 +1,25 @@
+{
+	"$schema": "../../node_modules/wrangler/config-schema.json",
+	"name": "ears-manipulator",
+	"compatibility_date": "2026-08-13",
+
+	// No `main`: the editor is entirely static. Everything — decoding the skin, rendering the
+	// preview, encoding the export — happens in the browser, so there is no Worker script and
+	// nothing is ever uploaded anywhere.
+	"assets": {
+		"directory": "./dist",
+		// unmatched paths serve index.html rather than a 404, for client-side routes later on
+		"not_found_handling": "single-page-application"
+	},
+
+	"routes": [
+		{
+			"pattern": "skin.daisy.cat",
+			"custom_domain": true
+		}
+	],
+
+	"observability": {
+		"enabled": true
+	}
+}
