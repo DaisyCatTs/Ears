@@ -6,7 +6,7 @@
 		"packages/*"
 	],
 	"scripts": {
-		"test": "vitest run packages/ears-protocol/test/fixtures.test.ts",
+		"test": "vitest run packages/ears-protocol/test/fixtures.test.ts packages/ears-renderer",
 		"test:watch": "vitest",
 		"test:reverse": "bun run fixtures:emit && bun run fixtures:decode && vitest run packages/ears-protocol/test/reverse.test.ts",
 		"test:all": "bun run test && bun run test:reverse",

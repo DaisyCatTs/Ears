@@ -17,9 +17,18 @@
         "fast-png": "^6.2.0",
       },
     },
+    "packages/ears-renderer": {
+      "name": "@ears/renderer",
+      "version": "0.0.0",
+      "dependencies": {
+        "@ears/protocol": "workspace:*",
+      },
+    },
   },
   "packages": {
     "@ears/protocol": ["@ears/protocol@workspace:packages/ears-protocol"],
+
+    "@ears/renderer": ["@ears/renderer@workspace:packages/ears-renderer"],
 
     "@esbuild/aix-ppc64": ["@esbuild/aix-ppc64@0.21.5", "", { "os": "aix", "cpu": "ppc64" }, "sha512-1SDgH6ZSPTlggy1yI6+Dbkiz8xzpHJEVAlF/AM1tHPLsf5STom9rwtjE4hKAF20FfXXNTFqEYXyJNWh1GiZedQ=="],
 

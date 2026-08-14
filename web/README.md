@@ -41,3 +41,17 @@ test, or on a server just as happily as in the editor.
   cannot be expressed in v1 at all, so `write()` falls back to v0 for it.
 
 Correctness here is defined by the Java implementation, not by this code. See `../tests/README.md`.
+
+## packages/ears-renderer
+
+A literal port of `EarsRenderer` — same order, same magic numbers, same push/pop nesting. It walks
+the features and emits quads through an `EarsRenderDelegate`; nothing in it knows about WebGL, so
+the same code drives both the fixture comparison and (soon) the three.js preview.
+
+`CaptureDelegate` collects the output into a flat display list with the same shape the Java oracle
+captures, so **"does the preview match the game" is a numeric diff**: 1632 objects across 47
+fixtures, compared quad by quad, move by move, UV by UV. Numbers are compared to four decimal
+places, because Java does this arithmetic in 32-bit float and we do it in double — exact equality
+would be testing IEEE rounding rather than geometry.
+
+Feature geometry belongs in `common`, not here. If the two disagree, this one is wrong.
