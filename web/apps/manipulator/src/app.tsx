@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ConfigPanel } from './components/ConfigPanel.js';
 import { InspectorPanel } from './components/InspectorPanel.js';
-import { PreviewPanel } from './components/PreviewPanel.js';
 import { Button } from './components/ui.js';
 import { derive } from './lib/derive.js';
 import { detectSlim } from './lib/profile.js';
@@ -10,6 +9,12 @@ import { buildSample } from './lib/sample.js';
 import { decodeSkin, download, exportSkin } from './lib/skin.js';
 import { prepareCape, prepareWing, withEntry, withoutEntry } from './lib/textures.js';
 import { useEditor } from './state/editor.js';
+
+// three.js is most of the bundle and nothing needs it until a skin is on screen, so it loads in its
+// own chunk rather than blocking first paint
+const PreviewPanel = lazy(async () => ({
+	default: (await import('./components/PreviewPanel.js')).PreviewPanel,
+}));
 
 export function App() {
 	const { state, actions, canUndo, canRedo, onKeyDown } = useEditor();
@@ -254,7 +259,13 @@ export function App() {
 				</aside>
 				{/* stacked on narrow screens, where the grid gives it no height of its own */}
 				<div className="min-h-[420px] bg-surface lg:min-h-0">
-					<PreviewPanel derived={derived} slim={state.slim} overlays={state.overlays} />
+					<Suspense
+						fallback={
+							<div className="grid h-full place-content-center text-muted">Loading the preview…</div>
+						}
+					>
+						<PreviewPanel derived={derived} slim={state.slim} overlays={state.overlays} />
+					</Suspense>
 				</div>
 				<aside className="min-h-0 border-edge lg:border-l">
 					<InspectorPanel
