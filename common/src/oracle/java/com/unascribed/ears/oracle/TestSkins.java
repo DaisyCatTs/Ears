@@ -48,6 +48,7 @@ public class TestSkins {
 		final EarsFeatures.Builder config;
 		AlfalfaData alfalfa = AlfalfaData.NONE;
 		boolean v0;
+		boolean emissivePalette;
 
 		Case(String name, String checklist, EarsFeatures.Builder config) {
 			this.name = name;
@@ -62,6 +63,11 @@ public class TestSkins {
 
 		Case with(AlfalfaData alfalfa) {
 			this.alfalfa = alfalfa;
+			return this;
+		}
+
+		Case withEmissivePalette() {
+			this.emissivePalette = true;
 			return this;
 		}
 	}
@@ -91,6 +97,7 @@ public class TestSkins {
 
 		for (Case c : cases) {
 			WritableEarsImage img = baseSkin();
+			if (c.emissivePalette) paintEmissivePalette(img);
 			EarsFeatures feat = c.config
 					.emissiveSkin(Slice.EMPTY)
 					.emissiveWing(Slice.EMPTY)
@@ -165,6 +172,10 @@ public class TestSkins {
 		l.add(new Case("27-cape", "A cape hanging from the shoulders that sways when you move",
 				base().capeEnabled(true)).with(cape()));
 
+		// the one upstream fixed in 2.0.2 and we have only diagnosed; see docs/upstream-issues.md
+		l.add(new Case("29-emissive", "Glowing pixels glow WITHOUT the normal texture showing through them (issue #235)",
+				base().earMode(EarMode.ABOVE).emissive(true)).withEmissivePalette());
+
 		l.add(new Case("28-everything", "Ears, claws, horn, bent tail, snout, chest, wings and cape all at once",
 				base().earMode(EarMode.AROUND).claws(true).horn(true)
 						.tailMode(TailMode.DOWN).tailSegments(3).tailBends(25, 20, 15, 0)
@@ -235,6 +246,20 @@ public class TestSkins {
 		fill(img, 56, 44, 8, 4, FEATURE);
 		fill(img, 60, 48, 4, 4, FEATURE_ALT);
 		return img;
+	}
+
+	/**
+	 * Emissive works by listing colours in a 4x4 palette at (52,32); every pixel in the skin using
+	 * one of them glows. Without the palette the parser turns the whole feature off.
+	 */
+	private static void paintEmissivePalette(WritableEarsImage img) {
+		for (int y = 0; y < 4; y++) {
+			for (int x = 0; x < 4; x++) {
+				img.setARGB(52+x, 32+y, 0);
+			}
+		}
+		img.setARGB(52, 32, FEATURE);
+		img.setARGB(53, 32, FEATURE_ALT);
 	}
 
 	private static void fill(WritableEarsImage img, int x, int y, int w, int h, int color) {

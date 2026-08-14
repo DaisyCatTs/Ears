@@ -43,6 +43,7 @@ the game should agree. Where they disagree, the game is right.
 | `25-wings-flat.png` | Wings flat against the back, not angled |  |
 | `26-wings-still.png` | Wings do NOT flap while walking |  |
 | `27-cape.png` | A cape hanging from the shoulders that sways when you move |  |
+| `29-emissive.png` | Glowing pixels glow WITHOUT the normal texture showing through them (issue #235) |  |
 | `28-everything.png` | Ears, claws, horn, bent tail, snout, chest, wings and cape all at once |  |
 
 ## If something is wrong
