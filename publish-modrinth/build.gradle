@@ -1,5 +1,5 @@
 plugins {
-	id 'com.modrinth.minotaur' version '2.7.5'
+	id 'com.modrinth.minotaur' version '2.9.0'
 }
 
 def target = project.getProperty("target")

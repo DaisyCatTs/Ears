@@ -1,5 +1,9 @@
+import net.darkhax.curseforgegradle.TaskPublishCurseForge
+
 plugins {
-	id 'com.matthewprenger.cursegradle' version '1.4.0'
+	// replaces com.matthewprenger.cursegradle 1.4.0, which is unmaintained and cannot run on
+	// anything newer than Gradle 7
+	id 'net.darkhax.curseforgegradle' version '1.3.33'
 }
 
 def target = project.getProperty("target")
@@ -9,61 +13,49 @@ def prefix = ""
 def artifact = "../platform-${target}/build/libs/ears-${target}-${version}.jar"
 def stability = ""
 def gameVersions = []
-def requires = []
-def conflicts = []
+def loaders = []
 
+// Unlike the old plugin, game versions and mod loaders are separate here rather than mixed into a
+// single list, which has the happy side effect of making this switch match publish-modrinth's.
 switch (target) {
 	case "fabric-1.21.11":
 		prefix = "FABRIC 1.21.11"
 		stability = 'release'
-		gameVersions = ['Fabric', 'Quilt', '1.21.11']
+		loaders = ['Fabric', 'Quilt']
+		gameVersions = ['1.21.11']
 		break
 	case "fabric-26.1":
 		prefix = "FABRIC 26.1/2"
 		stability = 'release'
-		gameVersions = ['Fabric', 'Quilt', '26.1', '26.1.1', '26.1.2', '26.2']
+		loaders = ['Fabric', 'Quilt']
+		gameVersions = ['26.1', '26.1.1', '26.1.2', '26.2']
 		break
 	case "neoforge-1.21.11":
 		prefix = "NEOFORGE 1.21.11"
 		stability = 'beta'
-		gameVersions = ['NeoForge', '1.21.11']
+		loaders = ['NeoForge']
+		gameVersions = ['1.21.11']
 		break
 	case "neoforge-26.1":
 		prefix = "NEOFORGE 26.1"
 		stability = 'beta'
-		gameVersions = ['NeoForge', '26.1', '26.1.1', '26.1.2', '26.2']
+		loaders = ['NeoForge']
+		gameVersions = ['26.1', '26.1.1', '26.1.2', '26.2']
 		break
 	default:
 		throw new Exception("Unknown target ${target}")
 }
 
-curseforge {
-	apiKey = project.getProperty("curseApiKey")
-	project {
-		id = '412013'
-		changelogType = 'html'
-		changelog = file('../changelog.html')
+tasks.register('curseforge', TaskPublishCurseForge) {
+	apiToken = project.findProperty('curseApiKey')
 
-		releaseType = stability
-		gameVersions.each { addGameVersion(it) }
-		
-		mainArtifact(file(artifact)) {
-			displayName = "[${prefix}] Ears v${version}"
-
-			// it is an error to open this section and not set any relations
-			if (!conflicts.isEmpty() || !requires.isEmpty()) {
-				relations {
-					conflicts.each { incompatible(it) }
-					requires.each { requiredDependency(it) }
-				}
-			}
-		}
-	}
-	options {
-		javaVersionAutoDetect = false
-//		debug = true
-	}
+	def mainFile = upload('412013', file(artifact))
+	mainFile.releaseType = stability
+	mainFile.changelog = file('../changelog.html').text
+	mainFile.changelogType = 'html'
+	mainFile.displayName = "[${prefix}] Ears v${version}"
+	gameVersions.each { mainFile.addGameVersion(it) }
+	loaders.each { mainFile.addGameVersion(it) }
+	// Ears is client-side only; say so rather than letting the plugin infer it from the jar
+	mainFile.addJavaVersion('Java 21')
 }
-
-task build {}
-task assemble {}

@@ -75,6 +75,29 @@ jobs:
             exit 1
           fi
 
+  publish-config:
+    name: Publish builds configure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # CurseForgeGradle needs a Java 25 *daemon*, not just a toolchain, so publishing cannot run
+      # on 21 the way the mod builds do
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 25
+      - uses: gradle/actions/setup-gradle@v6
+
+      # no tokens, so this only proves the builds resolve their plugins and configure their tasks —
+      # which is the part that was silently broken while they sat on Gradle 6.6.1
+      - name: CurseForge
+        run: ./gradlew tasks -Ptarget=fabric-1.21.11 -PcurseApiKey=dry-run
+        working-directory: publish-curseforge
+
+      - name: Modrinth
+        run: ./gradlew tasks -Ptarget=fabric-1.21.11 -PmodrinthApiKey=dry-run
+        working-directory: publish-modrinth
+
   web:
     name: Web
     runs-on: ubuntu-latest
