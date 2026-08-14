@@ -290,24 +290,18 @@ function drawHorn(img: SkinImage, r: Region, p: Palette): void {
  * A 4x4 claw patch.
  *
  * All four claw quads put texture row 0 at the far end — the toes on the feet, the fingertips on the
- * hands — so the claws point up the rows and the pad fills in behind them. Confirmed against the
- * display list rather than assumed, because the four quads are drawn with three different
- * rotation/flip combinations and it is not obvious from the call sites which way is out.
+ * hands — so the claws point up the rows. Confirmed against the display list rather than assumed,
+ * because the four are drawn with three different rotation/flip combinations.
+ *
+ * Only the claws themselves are drawn. Filling the rest of the square gives the feet a solid
+ * horizontal plate sticking out past the toes, which reads as a duck's foot rather than as claws.
  */
 function drawClaws(img: SkinImage, r: Region, p: Palette): void {
-	const claw = mix(p.cream, 0xffffffff, 0.45);
-	const clawShade = shade(claw, 0.84);
-	const pad = shade(p.fur, 0.86);
-	for (let x = 0; x < 4; x++) {
-		// two claws, each two texels wide, with a gap between them
-		const isClaw = x === 0 || x === 2;
-		for (let y = 0; y < 4; y++) {
-			if (y < 2) {
-				if (isClaw) put(img, r.x + x, r.y + y, y === 0 ? claw : clawShade);
-			} else {
-				put(img, r.x + x, r.y + y, y === 3 ? shade(pad, 0.9) : pad);
-			}
-		}
+	const claw = mix(p.cream, 0xffffffff, 0.5);
+	const clawShade = shade(claw, 0.8);
+	for (const x of [0, 2]) {
+		put(img, r.x + x, r.y, claw);
+		put(img, r.x + x, r.y + 1, clawShade);
 	}
 }
 

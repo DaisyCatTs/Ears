@@ -13,8 +13,17 @@ import type { LoadedSkin, Notice } from '../lib/skin.js';
 export interface EditorState {
 	/** The skin being edited, with previous Ears data still in it. */
 	image: SkinImage | null;
-	/** The skin as imported, before emissive extraction — what export writes into. */
+	/** The skin as imported, before emissive extraction — what export and the preview work from. */
 	original: SkinImage | null;
+	/**
+	 * The import exactly as it arrived, never written back to.
+	 *
+	 * `original` is the working copy and does get replaced — auto-texturing writes its generated
+	 * ears and tail into it. Deriving the next preset's art from that would find those regions
+	 * already occupied and leave the previous preset's art in place, so generation reads this
+	 * instead and the user's own pixels still win, because they are in here too.
+	 */
+	pristine: SkinImage | null;
 	features: PartialFeatures;
 	alfalfa: AlfalfaData;
 	slim: boolean;
@@ -58,6 +67,7 @@ const EMPTY_ALFALFA: AlfalfaData = { version: 0, entries: new Map() };
 export const INITIAL_STATE: EditorState = {
 	image: null,
 	original: null,
+	pristine: null,
 	features: EMPTY_FEATURES,
 	alfalfa: EMPTY_ALFALFA,
 	slim: false,
@@ -98,6 +108,7 @@ function reducer(state: EditorState, action: Action): EditorState {
 				...state,
 				image: action.skin.image,
 				original: action.skin.original,
+				pristine: action.skin.original,
 				features: features.enabled ? { ...rest, earAnchor: rest.earAnchor ?? 'CENTER' } : EMPTY_FEATURES,
 				alfalfa,
 				notices: action.skin.notices,

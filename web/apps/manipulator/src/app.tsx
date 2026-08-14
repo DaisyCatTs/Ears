@@ -152,10 +152,12 @@ export function App() {
 			}
 			// Ears reads each feature's texture from a corner of the skin that ordinary skins leave
 			// empty. Fill what this preset needs, in the wearer's own colours, or it renders nothing.
-			if (state.original) {
-				const missing = missingRegions(state.original, next);
+			if (state.pristine) {
+				const missing = missingRegions(state.pristine, next);
 				if (missing.length > 0) {
-					const { image } = autoTexture(state.original, next);
+					// generated from the untouched import, so switching preset redraws the features
+					// instead of finding the previous preset's art already there
+					const { image } = autoTexture(state.pristine, next);
 					actions.setSkin(image, image);
 					setTextureNotice(
 						`Drew ${describeRegions(missing)} into the skin, using its own colours — those parts of the texture were empty. Undo puts it back.`,
@@ -163,20 +165,20 @@ export function App() {
 				}
 			}
 		},
-		[actions, state.features, state.alfalfa, state.original],
+		[actions, state.features, state.alfalfa, state.pristine],
 	);
 
 	const onFluffier = useCallback(() => {
 		const next = fluffier(state.features);
 		actions.patch(next);
-		if (state.original) {
-			const missing = missingRegions(state.original, next);
+		if (state.pristine) {
+			const missing = missingRegions(state.pristine, next);
 			if (missing.length > 0) {
-				const { image } = autoTexture(state.original, next);
+				const { image } = autoTexture(state.pristine, next);
 				actions.setSkin(image, image);
 			}
 		}
-	}, [actions, state.features, state.original]);
+	}, [actions, state.features, state.pristine]);
 
 	const onCopy = async () => {
 		if (!state.original) return;

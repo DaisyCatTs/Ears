@@ -57,7 +57,11 @@ export class Preview {
 
 	private yaw = 25;
 	private pitch = 10;
-	private zoom = 42;
+	/** User zoom, as a multiplier on the automatic fit rather than an absolute distance. */
+	private zoom = 1;
+	/** What the model currently occupies, recomputed whenever the meshes change. */
+	private fitCenter = new THREE.Vector3(0, 1, 0);
+	private fitRadius = 22;
 	private dragging = false;
 
 	constructor(private readonly canvas: HTMLCanvasElement) {
@@ -102,7 +106,7 @@ export class Preview {
 			'wheel',
 			(e) => {
 				e.preventDefault();
-				this.zoom = Math.max(15, Math.min(120, this.zoom + e.deltaY / 8));
+				this.zoom = Math.max(0.4, Math.min(3, this.zoom + e.deltaY / 900));
 			},
 			{ passive: false },
 		);
@@ -172,20 +176,37 @@ export class Preview {
 				emissiveTextures: this.emissiveTextures,
 			}),
 		);
+
+		// Frame whatever is actually there. A fixed distance suits a bare player and then crops the
+		// moment a feature sticks out past it — tall ears and raised tails both went off the top of
+		// the viewport, which reads as the cosmetic not rendering at all.
+		const box = new THREE.Box3().setFromObject(this.root);
+		if (box.isEmpty()) return;
+		const sphere = box.getBoundingSphere(new THREE.Sphere());
+		this.fitCenter = sphere.center;
+		this.fitRadius = Math.max(sphere.radius, 1);
+	}
+
+	/** How far back the camera has to sit for the model to fit, on whichever axis is tighter. */
+	private fitDistance(): number {
+		const vFov = THREE.MathUtils.degToRad(this.camera.fov);
+		const hFov = 2 * Math.atan(Math.tan(vFov / 2) * this.camera.aspect);
+		// a little margin so nothing grazes the edge
+		return (this.fitRadius * 1.08) / Math.sin(Math.min(vFov, hFov) / 2);
 	}
 
 	render(): void {
 		if (this.disposed) return;
 		const yawRad = THREE.MathUtils.degToRad(this.yaw);
 		const pitchRad = THREE.MathUtils.degToRad(this.pitch);
-		const r = this.zoom;
+		const r = this.fitDistance() * this.zoom;
+		const c = this.fitCenter;
 		this.camera.position.set(
-			Math.sin(yawRad) * Math.cos(pitchRad) * r,
-			Math.sin(pitchRad) * r + 1,
-			Math.cos(yawRad) * Math.cos(pitchRad) * r,
+			c.x + Math.sin(yawRad) * Math.cos(pitchRad) * r,
+			c.y + Math.sin(pitchRad) * r,
+			c.z + Math.cos(yawRad) * Math.cos(pitchRad) * r,
 		);
-		// the model spans roughly -18..22, so aim a little below the origin to centre it in frame
-		this.camera.lookAt(0, 1, 0);
+		this.camera.lookAt(c);
 		this.renderer.render(this.scene, this.camera);
 	}
 
